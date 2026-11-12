@@ -45,7 +45,7 @@ app/src/main/java/com/pure/chageumtong/
 8. **Figma는 Dev Mode MCP로 수치를 직접 읽어라.** 스크린샷 눈대중 금지. `get_design_context` / `get_variable_defs` / `get_screenshot` 사용.
    - fileKey `N0XWXc1XGmwJ2IKMKcsQZZ`
    - 홈 `95:2142` · 분석 `95:2638` · 분석(칩 선택) `95:2689` · 지도 `95:2751` · 상점 `95:2870`
-   - Figma px → dp 변환은 반드시 `Dimens.fig()` 사용 (세로 기준 s = 1440/1184). 하드코딩 금지.
+   - Figma px → dp 변환은 반드시 `Dimens.fig()` 사용 (세로 기준 s = 1210/1184, 앱 영역 1682×1210dp 실측). 하드코딩 금지.
    - 일러스트(유니콘·도시·당근)는 내가 준 PNG/SVG(`app/src/main/res/drawable*`)만 쓴다. 벡터를 코드로 다시 그리지 마.
 9. **서드파티 IP 금지.** 포켓몬·피너츠·잔망루피 등 캐릭터 이미지를 레포에 넣지 마 (PRD §9).
 10. 에러가 나면: 원인 1줄 → 고친 내용 1줄 → 다시 빌드. 같은 에러 3번 반복되면 멈추고 나한테 선택지를 줘.
