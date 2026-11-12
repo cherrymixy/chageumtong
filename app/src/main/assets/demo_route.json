@@ -1,0 +1,19 @@
+{
+  "id": "demo-seoul-25km",
+  "totalKm": 25.0,
+  "segments": [
+    { "startKm": 0.0,   "endKm": 7.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "종로구 1-4" },
+    { "startKm": 7.0,   "endKm": 7.5,   "limitKmh": 60, "speedKmh": 55.0, "isCurve": true, "label": "종로구 21-22" },
+    { "startKm": 7.5,   "endKm": 10.95, "limitKmh": 60, "speedKmh": 60.0, "label": "중구 2-3" },
+    { "startKm": 10.95, "endKm": 11.05, "limitKmh": 50, "speedKmh": 70.0, "label": "중구 5-1" },
+    { "startKm": 11.05, "endKm": 25.0,  "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" }
+  ],
+  "events": [
+    { "atKm": 13.5, "type": "SAFE_DISTANCE", "label": "용산구 3-4" }
+  ],
+  "polyline": [
+    [0.08, 0.82], [0.18, 0.74], [0.24, 0.60], [0.30, 0.48], [0.38, 0.44],
+    [0.46, 0.50], [0.54, 0.42], [0.60, 0.30], [0.70, 0.26], [0.78, 0.34],
+    [0.84, 0.46], [0.92, 0.40]
+  ]
+}

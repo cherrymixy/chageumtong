@@ -1,9 +1,5 @@
 package com.pure.chageumtong
 
-import android.car.Car
-import android.car.VehiclePropertyIds
-import android.car.hardware.CarPropertyValue
-import android.car.hardware.property.CarPropertyManager
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -16,54 +12,31 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ai.pleos.playground.vehicle.Vehicle
-import ai.pleos.playground.vehicle.constant.control.VehicleGear
-import ai.pleos.playground.vehicle.listener.GearSelectionListener
+import com.pure.chageumtong.core.AppContainer
+import com.pure.chageumtong.core.ChageumtongApp
+import com.pure.chageumtong.data.vehicle.PleosVehicleDataSource
+import com.pure.chageumtong.domain.DriveState
+import com.pure.chageumtong.domain.praise
 import com.pure.chageumtong.ui.theme.ChageumtongTheme
 import kotlin.math.roundToInt
 
-private const val TAG = "CashDriving"
-private const val CAR_SPEED = "android.car.permission.CAR_SPEED"
-
 class MainActivity : ComponentActivity() {
 
-    private var gear by mutableStateOf("-")
-    private var speedKmh by mutableStateOf<Int?>(null)
-
-    // 기어: Pleos Vehicle SDK
-    private lateinit var vehicle: Vehicle
-    private val gearListener = object : GearSelectionListener {
-        override fun onSelected(gear: VehicleGear?) = runOnUiThread { this@MainActivity.gear = gear.label() }
-        override fun onFailed(e: Exception) { Log.e(TAG, "gear listener failed", e) }
-    }
-
-    // 차속: AAOS Car API (Vehicle SDK 2.3.2에 차속 API 없음)
-    private var car: Car? = null
-    private var carPropertyManager: CarPropertyManager? = null
-    private val speedCallback = object : CarPropertyManager.CarPropertyEventCallback {
-        override fun onChangeEvent(value: CarPropertyValue<*>) {
-            val mps = value.value as? Float ?: return
-            runOnUiThread { speedKmh = (mps * 3.6f).roundToInt() } // m/s → km/h
-        }
-        override fun onErrorEvent(propertyId: Int, areaId: Int) {
-            Log.e(TAG, "speed error: property=$propertyId area=$areaId")
-        }
-    }
+    private val container get() = (application as ChageumtongApp).container
 
     private val requestSpeedPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted) startSpeed() else Log.w(TAG, "CAR_SPEED denied")
+            if (granted) container.pleos.start() else Log.w("CashDriving", "CAR_SPEED denied")
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,73 +45,54 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChageumtongTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column(Modifier.padding(innerPadding), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("차금통", fontSize = 48.sp, fontWeight = FontWeight.Bold)
-                        DriveStatus(gear, speedKmh, Modifier.weight(1f))
-                    }
+                    DebugScreen(container, Modifier.padding(innerPadding))
                 }
             }
         }
-        startGear()
-        if (checkSelfPermission(CAR_SPEED) == PackageManager.PERMISSION_GRANTED) startSpeed()
-        else requestSpeedPermission.launch(CAR_SPEED)
-    }
-
-    private fun startGear() {
-        vehicle = Vehicle(this).apply { initialize() }
-        val gearApi = vehicle.getGear()
-        gearApi.getCurrentGearSelectionState(
-            { value -> runOnUiThread { gear = value.label() } },
-            { e -> Log.e(TAG, "get gear failed", e) },
-        )
-        gearApi.registerGearSelection(gearListener)
-    }
-
-    private fun startSpeed() {
-        car = Car.createCar(this)
-        carPropertyManager = (car?.getCarManager(Car.PROPERTY_SERVICE) as? CarPropertyManager)?.also {
-            it.registerCallback(speedCallback, VehiclePropertyIds.PERF_VEHICLE_SPEED, CarPropertyManager.SENSOR_RATE_UI)
+        container.pleos.start()
+        if (checkSelfPermission(PleosVehicleDataSource.CAR_SPEED) != PackageManager.PERMISSION_GRANTED) {
+            requestSpeedPermission.launch(PleosVehicleDataSource.CAR_SPEED)
         }
     }
 
     override fun onDestroy() {
-        vehicle.getGear().unregisterGearSelection(gearListener)
-        vehicle.release()
-        carPropertyManager?.unregisterCallback(speedCallback)
-        car?.disconnect()
+        if (isFinishing) container.pleos.stop()
         super.onDestroy()
     }
 }
 
-private fun VehicleGear?.label(): String = when (this) {
-    VehicleGear.GEAR_PARK -> "P"
-    VehicleGear.GEAR_REVERSE -> "R"
-    VehicleGear.GEAR_NEUTRAL -> "N"
-    VehicleGear.GEAR_DRIVE -> "D"
-    VehicleGear.GEAR_UNKNOWN, null -> "-"
-    else -> name.removePrefix("GEAR_") // 수동 1~9단
-}
-
+/** shortcut: STEP 3 임시 디버그 화면, STEP 5 회색박스 화면으로 교체 */
 @Composable
-fun DriveStatus(gear: String, speedKmh: Int?, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("기어", fontSize = 32.sp)
-            Text(gear, fontSize = 160.sp, fontWeight = FontWeight.Bold)
+private fun DebugScreen(container: AppContainer, modifier: Modifier = Modifier) {
+    val live by container.engine.live.collectAsState()
+    val demoRunning by container.demo.running.collectAsState()
+    val pleosOk by container.pleos.isAvailable.collectAsState()
+    val input by container.lastInput.collectAsState()
+    val big = 28.sp
+
+    Column(modifier.padding(32.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("차금통 · 디버그", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+        Text("입력원: ${if (demoRunning) "데모" else "Pleos"}  (Pleos 사용 가능: $pleosOk)", fontSize = big)
+        Text(
+            "기어 ${input?.sample?.gear ?: "-"} · 속도 ${input?.sample?.let { (it.speedMps * 3.6).roundToInt() } ?: "-"} km/h · 제한 ${input?.segment?.limitKmh ?: "-"}",
+            fontSize = big,
+        )
+        Text("상태 ${live.state}", fontSize = big, fontWeight = FontWeight.Bold)
+        Text(
+            "거리 ${"%.2f".format(live.distanceKm)} km · 시간 ${live.durationSec / 60}분 ${live.durationSec % 60}초",
+            fontSize = big,
+        )
+        Text("적립 예정 ${live.livePoints}P · 안전 ${live.safeRatio}% ${praise(live.safeRatio)}", fontSize = big)
+        live.violations.forEach {
+            Text("· ${it.title}  @${"%.2f".format(it.atKm)}km  ${it.locationLabel}", fontSize = big)
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("속도 (km/h)", fontSize = 32.sp)
-            Text(speedKmh?.toString() ?: "--", fontSize = 160.sp, fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(onClick = { container.demo.start() }, enabled = !demoRunning && live.state != DriveState.DRIVING) {
+                Text("▶ 데모 주행", fontSize = big)
+            }
+            Button(onClick = { container.resetDrive() }, enabled = live.state == DriveState.ENDED) {
+                Text(if (live.canClaim) "적립 처리 (초기화)" else "종료 (0.3km 미만, 적립 불가)", fontSize = big)
+            }
         }
     }
-}
-
-@Preview(showBackground = true, widthDp = 1280, heightDp = 720)
-@Composable
-fun DriveStatusPreview() {
-    ChageumtongTheme { DriveStatus("D", 62) }
 }
