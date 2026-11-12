@@ -10,7 +10,7 @@
 - 앱: 차금통 / 팀: pure / 패키지: `com.pure.chageumtong`
 - 대상: Pleos Connect Emulator v2.1.0 (Automotive, API 34, 2560×1440, 160dpi, 가로 고정)
 - 스택: Kotlin · Jetpack Compose(Material3) · Navigation Compose · ViewModel+StateFlow · DataStore+kotlinx.serialization · 수동 DI(AppContainer). **Hilt 쓰지 마.**
-- minSdk 28 / compileSdk·targetSdk 34 / Gradle 8+
+- minSdk 28 / compileSdk·targetSdk 37 (현재 AGP 9.5 템플릿 유지) / Gradle 8+
 
 ## 2. 폴더 구조 (지켜라)
 ```
@@ -52,12 +52,15 @@ app/src/main/java/com/pure/chageumtong/
 
 ## 4. 테스트 도구
 - 단위 테스트: `domain/` 점수·구간 계산은 반드시 JUnit 테스트 포함
-- adb 차량 신호 주입 (튜토리얼 문서 형식 기준으로 확인 후 사용):
+- 차량 신호 주입: 에뮬레이터가 user 빌드라 `adb root`·`inject-vhal-event` 불가 (확인함). **Virtual Console HTTP API** 사용:
   ```
-  adb root
-  adb shell "echo 'propId: {property id} areaId: 0 values: {value}' > /data/vendor/vsomeip/vhal_fifo"
+  adb forward tcp:8088 tcp:8088
+  curl -X POST "http://127.0.0.1:8088/browser/session?client=me"   # 세션 유지(약 3초 만료 → 매 요청 전 호출)
+  curl -X PUT  "http://127.0.0.1:8088/vehicle/gear?gear=Drive"        # Park|Reverse|Neutral|Drive
+  curl -X PUT  "http://127.0.0.1:8088/vehicle/controls?speed=60&accelerator=0&brake=0"  # km/h
   ```
-  기어(GEAR_SELECTION), 속도(PERF_VEHICLE_SPEED, m/s). property id·기어 값은 문서에서 확인해서 `scripts/`에 쉘 스크립트로 정리해라.
+  앱이 받는 값: 기어 VENDOR_GEAR_SELECTION (N=1, R=2, P=4, D=8), 속도 PERF_VEHICLE_SPEED(0x11600207, m/s). 시나리오는 `scripts/`에 쉘 스크립트로.
+- 새 패키지를 처음 설치한 직후엔 D에서 "주행 중에는 사용할 수 없습니다"가 뜰 수 있음 → `adb install -r`로 한 번 더 설치.
 
 ## 5. 빌드 순서
 STEP 0 계획 → 1 스캐폴드+SDK → 2 도메인 엔진 → 3 입력원(Real/Demo)+세션 → 4 저장·시드 → 5 회색박스 전체 화면 → 6 디자인 패스(홈·분석) → 7 릴리즈·README → (Phase 2) 8 디자인 패스(지도·상점·내역) → 9 NaviHelper·TTS → 10 주행 제한 QA → 11 PT 준비
