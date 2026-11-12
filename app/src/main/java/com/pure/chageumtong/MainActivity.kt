@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import ai.pleos.playground.vehicle.Vehicle
 import ai.pleos.playground.vehicle.constant.control.VehicleGear
 import ai.pleos.playground.vehicle.listener.GearSelectionListener
-import com.pure.chageumtong.ui.theme.CashDrivingTheme
+import com.pure.chageumtong.ui.theme.ChageumtongTheme
 import kotlin.math.roundToInt
 
 private const val TAG = "CashDriving"
@@ -70,9 +70,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CashDrivingTheme {
+            ChageumtongTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    DriveStatus(gear, speedKmh, Modifier.padding(innerPadding))
+                    Column(Modifier.padding(innerPadding), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("차금통", fontSize = 48.sp, fontWeight = FontWeight.Bold)
+                        DriveStatus(gear, speedKmh, Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -137,5 +140,5 @@ fun DriveStatus(gear: String, speedKmh: Int?, modifier: Modifier = Modifier) {
 @Preview(showBackground = true, widthDp = 1280, heightDp = 720)
 @Composable
 fun DriveStatusPreview() {
-    CashDrivingTheme { DriveStatus("D", 62) }
+    ChageumtongTheme { DriveStatus("D", 62) }
 }
