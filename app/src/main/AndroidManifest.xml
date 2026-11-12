@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 기어: Vehicle SDK Gear API (@RequiresPermission) -->
+    <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+    <!-- 차속: android.car PERF_VEHICLE_SPEED (런타임 권한) -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CashDriving">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.CashDriving"
+            android:windowSoftInputMode="adjustResize">
+            <!-- 주행 중(D, 5km/h 초과)에도 화면이 가려지지 않도록: AAOS UX 제한 대상에서 제외 -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
