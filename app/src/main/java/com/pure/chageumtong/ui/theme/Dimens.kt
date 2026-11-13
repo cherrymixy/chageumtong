@@ -17,3 +17,23 @@ fun figSp(px: Number): TextUnit = (px.toFloat() * FIG_SCALE).sp
 /** 차량 가독성 최소값 (PRD §7) */
 val MIN_TOUCH = 76.dp
 val BODY = 24.sp
+
+// Figma 레이아웃 토큰 (px → fig())
+object D {
+    val ScreenPad = fig(30)
+    val ColumnGap = fig(23)
+    val CardGap = fig(19)
+    val SmallCardGap = fig(26)
+    val CardPad = fig(36)
+    val RightColumn = fig(612)
+    val ContentHeight = fig(1023) // 메인 카드·분석 프레임 높이
+    val BottomGap = fig(20) // 카드 ↔ 탭바/확인 버튼
+    val BottomBarHeight = fig(85)
+
+    val RadiusScreen = fig(40)
+    val RadiusCard = fig(24)
+    val RadiusButton = fig(19)
+    val RadiusBar = fig(8)
+    val RadiusRail = fig(6)
+    val StrokeCard = fig(1)
+}
