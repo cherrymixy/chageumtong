@@ -22,8 +22,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pure.chageumtong.core.AppContainer
 import com.pure.chageumtong.ui.components.BigButton
-import com.pure.chageumtong.ui.components.GrayBox
 import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
+import com.pure.chageumtong.ui.screens.history.HistoryScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
 import com.pure.chageumtong.ui.screens.map.MapScreen
 import com.pure.chageumtong.ui.screens.shop.ShopScreen
@@ -71,7 +71,9 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
             }
             composable("map") { MapScreen(vm) }
             composable("shop") { ShopScreen(vm) }
-            composable("history") { GrayBox("적립 내역 (준비 중)", Modifier.fillMaxSize()) }
+            composable("history") {
+                HistoryScreen(vm, onOpenSession = { id -> nav.navigate("analysis/$id?readonly=true") }, onBack = { nav.popBackStack() })
+            }
         }
         // 좌하단 플로팅 탭바: 홈/지도/상점에서만
         if (route in TABS.map { it.first }) {
