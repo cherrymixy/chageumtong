@@ -25,6 +25,7 @@ import com.pure.chageumtong.ui.components.BigButton
 import com.pure.chageumtong.ui.components.GrayBox
 import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
+import com.pure.chageumtong.ui.screens.map.MapScreen
 import com.pure.chageumtong.ui.theme.Blue
 import com.pure.chageumtong.ui.theme.BoxGray
 import com.pure.chageumtong.ui.theme.CardBg
@@ -67,7 +68,7 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                     if (readonly) nav.popBackStack() else nav.popBackStack("home", inclusive = false)
                 }
             }
-            composable("map") { GrayBox("지도 (준비 중)", Modifier.fillMaxSize()) }
+            composable("map") { MapScreen(vm) }
             composable("shop") { GrayBox("상점 (준비 중)", Modifier.fillMaxSize()) }
             composable("history") { GrayBox("적립 내역 (준비 중)", Modifier.fillMaxSize()) }
         }
