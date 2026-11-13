@@ -36,13 +36,19 @@ class MainActivity : ComponentActivity() {
             }
         }
         container.pleos.start()
+        container.navi.start()
+        container.tts.start()
         if (checkSelfPermission(PleosVehicleDataSource.CAR_SPEED) != PackageManager.PERMISSION_GRANTED) {
             requestSpeedPermission.launch(PleosVehicleDataSource.CAR_SPEED)
         }
     }
 
     override fun onDestroy() {
-        if (isFinishing) container.pleos.stop()
+        if (isFinishing) {
+            container.pleos.stop()
+            container.navi.stop()
+            container.tts.stop()
+        }
         super.onDestroy()
     }
 }

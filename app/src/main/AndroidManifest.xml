@@ -9,6 +9,8 @@
     <!-- 길안내: NaviHelper requestRoute / 정보 조회(제한속도 등) -->
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <!-- TextToSpeech SDK: 적립 완료 음성 안내 -->
+    <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
 
     <uses-feature
         android:name="android.hardware.type.automotive"

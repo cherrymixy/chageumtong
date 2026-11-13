@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.pleos.vehicle)
     implementation(libs.pleos.navihelper)
+    implementation(libs.pleos.tts)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore)

@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -64,6 +65,10 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
     val data by vm.data.collectAsState()
     val session = data.sessions.find { it.id == sessionId }
     var selected by remember(sessionId) { mutableIntStateOf(0) }
+    // 새로 적립한 주행만 음성 안내 1회 (지난 기록 열람은 조용히)
+    LaunchedEffect(sessionId, session != null) {
+        if (!readonly && session != null) vm.announcePoints(session.points)
+    }
 
     Column(Modifier.fillMaxSize().padding(start = D.ScreenPad, top = D.ScreenPad, end = D.ScreenPad)) {
         Row(Modifier.fillMaxWidth().height(D.ContentHeight).clip(RoundedCornerShape(D.RadiusCard)).background(Surface)) {

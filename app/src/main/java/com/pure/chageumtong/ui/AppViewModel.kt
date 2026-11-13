@@ -9,6 +9,7 @@ import com.pure.chageumtong.data.repo.PurchaseResult
 import com.pure.chageumtong.domain.DriveState
 import com.pure.chageumtong.domain.Gear
 import com.pure.chageumtong.domain.LiveDrive
+import com.pure.chageumtong.domain.Place
 import com.pure.chageumtong.domain.Product
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,12 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     fun claim(onClaimed: (sessionId: String) -> Unit) {
         viewModelScope.launch { c.claimAndReset()?.let { onClaimed(it.id) } }
     }
+
+    /** 지도 [길안내 시작] → NaviHelper. onResult(성공 여부) */
+    fun navigate(place: Place, onResult: (Boolean) -> Unit) = c.navi.route(place, onResult)
+
+    /** 분석 화면 진입(새 적립) 시 1회 음성 안내 */
+    fun announcePoints(points: Int) = c.tts.announcePoints(points)
 
     fun purchase(product: Product, onResult: (PurchaseResult) -> Unit) {
         viewModelScope.launch { onResult(c.points.purchase(product)) }

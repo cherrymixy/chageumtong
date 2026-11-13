@@ -103,5 +103,8 @@ data class Place(
     val open: Boolean,
     val mapX: Float,
     val mapY: Float,
+    /** 길안내 목적지 (시연용 근사 좌표, WGS84) */
+    val lat: Double,
+    val lon: Double,
     val imageAsset: String,
 )

@@ -1,11 +1,11 @@
 [
-  { "id": "ch-1", "category": "CHARGER", "name": "현대 E-pit 종로", "subtitle": "초급속 충전소", "minutes": 6, "meters": 2100, "open": true, "mapX": 0.32, "mapY": 0.28, "imageAsset": "place_charger" },
-  { "id": "ch-2", "category": "CHARGER", "name": "을지로 공영주차장 충전소", "subtitle": "급속 충전소", "minutes": 9, "meters": 3400, "open": true, "mapX": 0.58, "mapY": 0.42, "imageAsset": "place_charger" },
-  { "id": "ch-3", "category": "CHARGER", "name": "용산역 충전 스테이션", "subtitle": "완속·급속 충전소", "minutes": 15, "meters": 6200, "open": false, "mapX": 0.44, "mapY": 0.78, "imageAsset": "place_charger" },
-  { "id": "dl-1", "category": "DEALER", "name": "현대자동차 광화문 대리점", "subtitle": "대리점", "minutes": 5, "meters": 1800, "open": true, "mapX": 0.24, "mapY": 0.36, "imageAsset": "place_dealer" },
-  { "id": "dl-2", "category": "DEALER", "name": "현대자동차 충무로 대리점", "subtitle": "대리점", "minutes": 11, "meters": 4100, "open": true, "mapX": 0.66, "mapY": 0.55, "imageAsset": "place_dealer" },
-  { "id": "dl-3", "category": "DEALER", "name": "현대자동차 마포 대리점", "subtitle": "대리점", "minutes": 18, "meters": 7300, "open": false, "mapX": 0.12, "mapY": 0.64, "imageAsset": "place_dealer" },
-  { "id": "bh-1", "category": "BLUEHANDS", "name": "블루핸즈 종로점", "subtitle": "정비·점검", "minutes": 7, "meters": 2600, "open": true, "mapX": 0.40, "mapY": 0.20, "imageAsset": "place_bluehands" },
-  { "id": "bh-2", "category": "BLUEHANDS", "name": "블루핸즈 성동점", "subtitle": "정비·점검", "minutes": 14, "meters": 5800, "open": true, "mapX": 0.82, "mapY": 0.48, "imageAsset": "place_bluehands" },
-  { "id": "bh-3", "category": "BLUEHANDS", "name": "블루핸즈 용산점", "subtitle": "정비·점검", "minutes": 16, "meters": 6600, "open": true, "mapX": 0.52, "mapY": 0.86, "imageAsset": "place_bluehands" }
+  { "id": "ch-1", "category": "CHARGER", "name": "현대 E-pit 종로", "subtitle": "초급속 충전소", "minutes": 6, "meters": 2100, "open": true, "mapX": 0.32, "mapY": 0.28, "lat": 37.5704, "lon": 126.992, "imageAsset": "place_charger" },
+  { "id": "ch-2", "category": "CHARGER", "name": "을지로 공영주차장 충전소", "subtitle": "급속 충전소", "minutes": 9, "meters": 3400, "open": true, "mapX": 0.58, "mapY": 0.42, "lat": 37.566, "lon": 126.991, "imageAsset": "place_charger" },
+  { "id": "ch-3", "category": "CHARGER", "name": "용산역 충전 스테이션", "subtitle": "완속·급속 충전소", "minutes": 15, "meters": 6200, "open": false, "mapX": 0.44, "mapY": 0.78, "lat": 37.5298, "lon": 126.9648, "imageAsset": "place_charger" },
+  { "id": "dl-1", "category": "DEALER", "name": "현대자동차 광화문 대리점", "subtitle": "대리점", "minutes": 5, "meters": 1800, "open": true, "mapX": 0.24, "mapY": 0.36, "lat": 37.572, "lon": 126.9769, "imageAsset": "place_dealer" },
+  { "id": "dl-2", "category": "DEALER", "name": "현대자동차 충무로 대리점", "subtitle": "대리점", "minutes": 11, "meters": 4100, "open": true, "mapX": 0.66, "mapY": 0.55, "lat": 37.5612, "lon": 126.9942, "imageAsset": "place_dealer" },
+  { "id": "dl-3", "category": "DEALER", "name": "현대자동차 마포 대리점", "subtitle": "대리점", "minutes": 18, "meters": 7300, "open": false, "mapX": 0.12, "mapY": 0.64, "lat": 37.5445, "lon": 126.9515, "imageAsset": "place_dealer" },
+  { "id": "bh-1", "category": "BLUEHANDS", "name": "블루핸즈 종로점", "subtitle": "정비·점검", "minutes": 7, "meters": 2600, "open": true, "mapX": 0.40, "mapY": 0.20, "lat": 37.5735, "lon": 127.001, "imageAsset": "place_bluehands" },
+  { "id": "bh-2", "category": "BLUEHANDS", "name": "블루핸즈 성동점", "subtitle": "정비·점검", "minutes": 14, "meters": 5800, "open": true, "mapX": 0.82, "mapY": 0.48, "lat": 37.5633, "lon": 127.037, "imageAsset": "place_bluehands" },
+  { "id": "bh-3", "category": "BLUEHANDS", "name": "블루핸즈 용산점", "subtitle": "정비·점검", "minutes": 16, "meters": 6600, "open": true, "mapX": 0.52, "mapY": 0.86, "lat": 37.534, "lon": 126.973, "imageAsset": "place_bluehands" }
 ]

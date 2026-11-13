@@ -104,8 +104,12 @@ fun MapScreen(vm: AppViewModel) {
                         p,
                         favorite = p.id in favorites,
                         onFavorite = { vm.toggleFavorite(p.id) },
-                        // shortcut: STEP 9에서 NaviHelper.requestRoute로 교체
-                        onNavigate = { Toast.makeText(context, "내비게이션으로 안내를 시작할 수 없어요", Toast.LENGTH_SHORT).show() },
+                        onNavigate = {
+                            vm.navigate(p) { ok ->
+                                val msg = if (ok) "${p.name}까지 길안내를 시작해요" else "내비게이션으로 안내를 시작할 수 없어요"
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            }
+                        },
                     )
                 }
             }

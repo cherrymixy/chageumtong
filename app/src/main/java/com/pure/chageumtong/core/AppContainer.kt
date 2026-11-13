@@ -1,6 +1,7 @@
 package com.pure.chageumtong.core
 
 import android.content.Context
+import com.pure.chageumtong.data.navi.NaviRoute
 import com.pure.chageumtong.data.repo.AppStore
 import com.pure.chageumtong.data.repo.PlaceRepository
 import com.pure.chageumtong.data.repo.PointRepository
@@ -11,6 +12,7 @@ import com.pure.chageumtong.data.seed.SeedData
 import com.pure.chageumtong.data.vehicle.DemoVehicleDataSource
 import com.pure.chageumtong.data.vehicle.DriveInput
 import com.pure.chageumtong.data.vehicle.PleosVehicleDataSource
+import com.pure.chageumtong.data.voice.PointTts
 import com.pure.chageumtong.domain.DriveSession
 import com.pure.chageumtong.domain.DriveSessionEngine
 import com.pure.chageumtong.domain.DriveState
@@ -32,6 +34,8 @@ class AppContainer(context: Context) {
     val pleos = PleosVehicleDataSource(appContext)
     val demoRoute by lazy { DemoRouteLoader.load(appContext) }
     val demo = DemoVehicleDataSource(scope) { demoRoute }
+    val navi = NaviRoute(appContext)
+    val tts = PointTts(appContext)
 
     /** 통계·날짜는 항상 한국 시간 기준 (에뮬레이터 기본 시간대가 America/Los_Angeles라서) */
     val zone: ZoneId = ZoneId.of("Asia/Seoul")

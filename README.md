@@ -61,7 +61,8 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 |---|---|---|
 | Vehicle SDK | 2.3.2 | **기어** 상태(P/R/N/D) 실시간 수신 → 주행 시작·종료 판정 |
 | Android Car API (`CarPropertyManager`) | 플랫폼 | **차속** `PERF_VEHICLE_SPEED` 수신 (Vehicle SDK 2.3.2에 차속 API가 없어 AAOS 표준 API 사용) |
-| NaviHelper SDK | 3.0.5 | 사용처 **길안내** — 의존성·권한 적용 완료, 화면 연동은 Phase 2 |
+| NaviHelper SDK | 3.0.5 | 지도 화면 [길안내 시작] → `requestRoute`로 사용처(충전소·대리점·블루핸즈) 길안내. 결과는 `onRoutingCompleted`/`onError`로 받아 실패 시 안내 토스트 |
+| TextToSpeech SDK | 3.3.1 | 적립 완료 시 "이번 주행으로 N포인트가 적립됐어요" 음성 안내 (`Mode.ON_DEVICE`, 한국어). 미지원·실패 시 조용히 생략 |
 
 화면과 점수 엔진은 데이터가 실차에서 왔는지 데모에서 왔는지 모릅니다. 분기는 `VehicleDataSource` 구현체(`PleosVehicleDataSource` / `DemoVehicleDataSource`)에서만 합니다.
 
@@ -69,7 +70,7 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 
 - **급커브·안전거리 판정은 데모 경로 기반**입니다. 실차에서 핸들 각도·ADAS(차간거리) 신호를 받을 수 없어, 커브 구간과 안전거리 이벤트는 데모 경로 데이터로 판정합니다. 향후 해당 API가 열리면 `VehicleDataSource`에 입력만 추가해 연동합니다.
 - **제한속도**: 실주행 시 기본 60km/h로 판정합니다. Phase 2에서 NaviHelper의 현재 도로 제한속도(`onCurrentRoadSpeedLimit`)로 교체합니다.
-- **길안내**: 지도 화면의 [길안내 시작]은 Phase 2에서 NaviHelper `requestRoute`로 연결합니다.
+- **길안내**: 장소 좌표는 시연용 근사값입니다. 내비게이션 앱의 경로 탐색은 네트워크가 필요해서, 에뮬레이터가 오프라인이면 내비 앱이 "경로 탐색 오류"를 띄웁니다.
 - **분석 지도**: 실주행도 데모 경로 그림 위에 표시합니다.
 - Phase 2 계획: 지도·상점·내역 화면 디자인 적용, 적립 완료 TTS 안내, 주행 제한 QA.
 
