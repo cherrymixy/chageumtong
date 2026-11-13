@@ -1,5 +1,10 @@
 package com.pure.chageumtong.ui.screens.map
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,11 +31,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,9 +45,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraAnimation
+import com.kakao.vectormap.camera.CameraUpdateFactory
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelStyle
 import androidx.compose.ui.res.painterResource
+import com.pure.chageumtong.BuildConfig
+import kotlin.math.roundToInt
 import com.pure.chageumtong.R
 import com.pure.chageumtong.domain.Place
 import com.pure.chageumtong.domain.PlaceCategory
@@ -50,6 +74,7 @@ import com.pure.chageumtong.ui.theme.Alert
 import com.pure.chageumtong.ui.theme.Bg
 import com.pure.chageumtong.ui.theme.D
 import com.pure.chageumtong.ui.theme.DealerRed
+import com.pure.chageumtong.ui.theme.GasGreen
 import com.pure.chageumtong.ui.theme.MIN_TOUCH
 import com.pure.chageumtong.ui.theme.Primary
 import com.pure.chageumtong.ui.theme.PrimaryTint
@@ -64,6 +89,7 @@ private val PlaceCategory.label get() = when (this) {
     PlaceCategory.CHARGER -> "충전소"
     PlaceCategory.DEALER -> "대리점"
     PlaceCategory.BLUEHANDS -> "블루핸즈"
+    PlaceCategory.GAS -> "주유소"
 }
 
 /** Figma 95:2827/2829/2831 칩 글자색 */
@@ -71,22 +97,31 @@ private val PlaceCategory.color get() = when (this) {
     PlaceCategory.CHARGER -> Primary
     PlaceCategory.DEALER -> DealerRed
     PlaceCategory.BLUEHANDS -> Alert
+    PlaceCategory.GAS -> GasGreen
 }
 
 private fun distance(m: Int) = if (m < 1000) "${m}m" else "%.1fkm".format(m / 1000.0)
 
-/** 지도 — 포인트 사용처 (Figma 95:2751, PRD §6.3). 정적 지도 + 정규화 좌표 핀. */
+/** 지도 — 포인트 사용처 (Figma 95:2751, PRD §6.3). 카카오 키가 있으면 실제 카카오맵, 없으면 정적 지도 그림. */
 @Composable
 fun MapScreen(vm: AppViewModel) {
     val driving by vm.isDriving.collectAsState()
     val favorites by vm.favorites.collectAsState()
+    val places by vm.places.collectAsState()
     var query by remember { mutableStateOf("") }
     var filters by remember { mutableStateOf(emptySet<PlaceCategory>()) }
     val context = LocalContext.current
     // 주행 중엔 검색어를 고칠 수 없으니, 출발하면 비워서 목록 전체를 보여줌 (PRD §7)
     LaunchedEffect(driving) { if (driving) query = "" }
 
-    val list = vm.places.filter { p ->
+    val navigate: (Place) -> Unit = { p ->
+        vm.navigate(p) { ok ->
+            val msg = if (ok) "${p.name}까지 길안내를 시작해요" else "내비게이션으로 안내를 시작할 수 없어요"
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val list = places.filter { p ->
         (filters.isEmpty() || p.category in filters) &&
             (query.isBlank() || p.name.contains(query.trim()) || p.subtitle.contains(query.trim()))
     }
@@ -107,17 +142,12 @@ fun MapScreen(vm: AppViewModel) {
                         p,
                         favorite = p.id in favorites,
                         onFavorite = { vm.toggleFavorite(p.id) },
-                        onNavigate = {
-                            vm.navigate(p) { ok ->
-                                val msg = if (ok) "${p.name}까지 길안내를 시작해요" else "내비게이션으로 안내를 시작할 수 없어요"
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                            }
-                        },
+                        onNavigate = { navigate(p) },
                     )
                 }
             }
         }
-        StaticMap(list, filters, Modifier.weight(1f).fillMaxHeight()) { c ->
+        PlaceMap(list, filters, vm.mapCenter, navigate, Modifier.weight(1f).fillMaxHeight()) { c ->
             filters = if (c in filters) filters - c else filters + c
         }
     }
@@ -190,34 +220,18 @@ private fun PlaceCard(p: Place, favorite: Boolean, onFavorite: () -> Unit, onNav
 @Composable
 private fun Dot() = Box(Modifier.size(fig(2)).background(TextTertiary, CircleShape))
 
-/** 우측 지도 (95:2752): 지도 일러스트 + 장소 핀 + 유니콘 현재 위치 + 내 위치 버튼 + 필터 칩 */
+/** 우측 지도 (95:2752): 지도(카카오맵 또는 일러스트) + 장소 핀 + 유니콘 현재 위치 + 내 위치 버튼 + 필터 칩 */
 @Composable
-private fun StaticMap(places: List<Place>, filters: Set<PlaceCategory>, modifier: Modifier, onFilter: (PlaceCategory) -> Unit) {
-    BoxWithConstraints(modifier) {
-        Image(painterResource(R.drawable.map_static), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        // shortcut: 핀은 분류색 원형 마커(지도 그림에 박힌 파란 핀과 별개), 실제 지도 SDK 붙일 때 교체
-        val pin = fig(36)
-        places.forEach { p ->
-            Box(
-                Modifier.offset(maxWidth * p.mapX - pin / 2, maxHeight * p.mapY - pin / 2).size(pin)
-                    .shadow(fig(4), CircleShape).background(Color.White, CircleShape).padding(fig(6))
-                    .background(p.category.color, CircleShape),
-            )
-        }
-        // 현재 위치 = 유니콘 마커 (95:2848, 128 + 아래 파란 점 29). 위치는 Figma 비율 그대로
-        Column(
-            Modifier.offset(maxWidth * (550f / 1143f) - fig(64), maxHeight * (783f / 1184f)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(fig(11)),
-        ) {
-            Image(painterResource(R.drawable.unicorn_marker), "현재 위치", Modifier.size(fig(128)))
-            Box(Modifier.size(fig(29)).border(fig(4), Color.White, CircleShape).padding(fig(4)).background(Primary, CircleShape))
-        }
-        // 내 위치 버튼 (95:2868, 64 + 그림자 포함 102). 정적 지도라 동작 없음
-        Image(
-            painterResource(R.drawable.ic_crosshair), null,
-            Modifier.align(Alignment.BottomStart).padding(start = fig(43 - 19), bottom = fig(123 - 24)).size(fig(102)),
-        )
+private fun PlaceMap(
+    places: List<Place>,
+    filters: Set<PlaceCategory>,
+    center: Pair<Double, Double>,
+    onPick: (Place) -> Unit,
+    modifier: Modifier,
+    onFilter: (PlaceCategory) -> Unit,
+) {
+    Box(modifier) {
+        if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank()) KakaoMapLayer(places, center, onPick) else StaticLayer(places)
         // 필터 칩 (95:2825): 흰 칩 높이 64, 선택 시 분류색 10% (Figma에 선택 상태 없음 → 추가)
         Row(
             Modifier.align(Alignment.BottomStart).padding(start = fig(43), bottom = fig(32 - 6)),
@@ -242,3 +256,121 @@ private fun StaticMap(places: List<Place>, filters: Set<PlaceCategory>, modifier
 private fun Color.compositeOverWhite() = Color(
     red = red * alpha + (1 - alpha), green = green * alpha + (1 - alpha), blue = blue * alpha + (1 - alpha),
 )
+
+/** 카카오 키가 없을 때: 지도 일러스트 + 정규화 좌표 핀 + 유니콘 (기존 정적 지도) */
+@Composable
+private fun StaticLayer(places: List<Place>) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        Image(painterResource(R.drawable.map_static), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        val pin = fig(36)
+        places.filter { it.category != PlaceCategory.GAS }.forEach { p -> // 카카오 검색분은 그림 위 좌표가 없음
+            Box(
+                Modifier.offset(maxWidth * p.mapX - pin / 2, maxHeight * p.mapY - pin / 2).size(pin)
+                    .shadow(fig(4), CircleShape).background(Color.White, CircleShape).padding(fig(6))
+                    .background(p.category.color, CircleShape),
+            )
+        }
+        // 현재 위치 = 유니콘 마커 (95:2848, 128 + 아래 파란 점 29). 위치는 Figma 비율 그대로
+        Column(
+            Modifier.offset(maxWidth * (550f / 1143f) - fig(64), maxHeight * (783f / 1184f)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(fig(11)),
+        ) {
+            Image(painterResource(R.drawable.unicorn_marker), "현재 위치", Modifier.size(fig(128)))
+            Box(Modifier.size(fig(29)).border(fig(4), Color.White, CircleShape).padding(fig(4)).background(Primary, CircleShape))
+        }
+        // 내 위치 버튼 (95:2868, 64 + 그림자 포함 102). 정적 지도라 동작 없음
+        Image(
+            painterResource(R.drawable.ic_crosshair), null,
+            Modifier.align(Alignment.BottomStart).padding(start = fig(43 - 19), bottom = fig(123 - 24)).size(fig(102)),
+        )
+    }
+}
+
+/**
+ * 실제 카카오맵 (Map SDK v2). 장소 = 분류색 원형 라벨, 현재 위치 = 유니콘 라벨, 라벨을 누르면 길안내.
+ * SDK 요구: start()로 시작, 화면 resume/pause를 그대로 전달, 떠날 때 finish().
+ */
+@Composable
+private fun KakaoMapLayer(places: List<Place>, center: Pair<Double, Double>, onPick: (Place) -> Unit) {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var map by remember { mutableStateOf<KakaoMap?>(null) }
+    val pick by rememberUpdatedState(onPick)
+    val here = LatLng.from(center.first, center.second)
+    // 카카오맵은 라벨 비트맵을 xhdpi(2x) 기준으로 보고 화면 밀도에 맞춰 줄인다(160dpi에선 0.5배) → 2x 픽셀로 넘김
+    val labelScale = 2f / density.density
+    val pinPx = with(density) { (fig(36).toPx() * labelScale).roundToInt() }
+    val unicornPx = with(density) { (fig(128).toPx() * labelScale).roundToInt() }
+    val unicorn = remember(unicornPx) {
+        Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.unicorn_marker), unicornPx, unicornPx, true)
+    }
+
+    val mapView = remember {
+        MapView(context).apply {
+            start(
+                object : MapLifeCycleCallback() {
+                    override fun onMapDestroy() { map = null }
+                    override fun onMapError(error: Exception) {
+                        Log.w("KakaoMap", "map error (키·키 해시 확인)", error)
+                    }
+                },
+                object : KakaoMapReadyCallback() {
+                    override fun getPosition(): LatLng = here
+                    override fun getZoomLevel(): Int = 14
+                    override fun onMapReady(kakaoMap: KakaoMap) {
+                        kakaoMap.setOnLabelClickListener { _, _, label -> (label.tag as? Place)?.let(pick); true }
+                        map = kakaoMap
+                    }
+                },
+            )
+        }
+    }
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, e ->
+            if (e == Lifecycle.Event.ON_RESUME) mapView.resume()
+            if (e == Lifecycle.Event.ON_PAUSE) mapView.pause()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer); mapView.finish() }
+    }
+    // 목록·필터가 바뀌면 라벨을 새로 그림
+    LaunchedEffect(map, places) {
+        val m = map ?: return@LaunchedEffect
+        val layer = m.labelManager?.layer ?: return@LaunchedEffect
+        layer.removeAll()
+        layer.addLabel(LabelOptions.from(here).setStyles(LabelStyle.from(unicorn)))
+        places.forEach { p ->
+            layer.addLabel(
+                LabelOptions.from(LatLng.from(p.lat, p.lon))
+                    .setStyles(LabelStyle.from(pinBitmap(pinPx, p.category.color)))
+                    .setClickable(true)
+                    .setTag(p),
+            )
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        AndroidView({ mapView }, Modifier.fillMaxSize())
+        // 내 위치 버튼 (95:2868): 지도 중심을 현재 위치로
+        Image(
+            painterResource(R.drawable.ic_crosshair), "내 위치로",
+            Modifier.align(Alignment.BottomStart).padding(start = fig(43 - 19), bottom = fig(123 - 24)).size(fig(102))
+                .clickable { map?.moveCamera(CameraUpdateFactory.newCenterPosition(here), CameraAnimation.from(500, true, true)) },
+        )
+    }
+}
+
+/** 흰 테두리 + 분류색 원 (정적 지도 핀과 같은 모양: 36 중 테두리 6) */
+private fun pinBitmap(size: Int, color: Color): Bitmap {
+    val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val r = size / 2f
+    paint.color = android.graphics.Color.WHITE
+    canvas.drawCircle(r, r, r, paint)
+    paint.color = color.toArgb()
+    canvas.drawCircle(r, r, r * (12f / 18f), paint)
+    return bmp
+}

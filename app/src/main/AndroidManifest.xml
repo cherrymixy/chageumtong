@@ -12,6 +12,9 @@
     <!-- TextToSpeech SDK: 적립 완료 음성 안내 -->
     <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
 
+    <!-- 카카오맵 타일 + 카카오 로컬 API(주유소 검색) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-feature
         android:name="android.hardware.type.automotive"
         android:required="true" />

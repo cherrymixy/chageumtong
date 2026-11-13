@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -18,6 +20,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 카카오 키는 local.properties(레포 밖)에서 읽는다. 없으면 빈 값 → 지도는 기존 그림으로 대체
+        val local = Properties().apply {
+            rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+        }
+        buildConfigField("String", "KAKAO_NATIVE_KEY", "\"${local.getProperty("KAKAO_NATIVE_KEY", "")}\"")
+        buildConfigField("String", "KAKAO_REST_KEY", "\"${local.getProperty("KAKAO_REST_KEY", "")}\"")
     }
 
     // 서명 키·비밀번호는 레포 밖(~/keys, ~/.gradle/gradle.properties)에 둔다. 없으면 release는 미서명으로 빌드됨
@@ -47,6 +56,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     // 차속(PERF_VEHICLE_SPEED)은 Vehicle SDK 2.3.2에 API가 없어 AAOS 표준 Car API로 읽는다
     useLibrary("android.car")
@@ -68,6 +78,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kakao.map)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

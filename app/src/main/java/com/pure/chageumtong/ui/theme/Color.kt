@@ -19,6 +19,7 @@ val BubbleStroke = Color(0xFF858585)
 val AdBadge = Color(0x52000000) // 32%
 val Scrim = Color(0xFF1F1F1F) // 상점 카드 위아래 그라데이션
 val DealerRed = Color(0xFFFE6534) // 지도 대리점 칩
+val GasGreen = Color(0xFF00A651) // 지도 주유소 칩 (Figma에 없음, 카카오 검색 추가분)
 
 // 글자
 val TextTitle = Color(0xFF000000)

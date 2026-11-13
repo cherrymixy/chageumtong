@@ -3,6 +3,7 @@ package com.pure.chageumtong.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pure.chageumtong.core.AppContainer
+import com.pure.chageumtong.data.navi.GasStationSearch
 import com.pure.chageumtong.data.repo.AppData
 import com.pure.chageumtong.data.repo.MonthStats
 import com.pure.chageumtong.data.repo.PurchaseResult
@@ -11,8 +12,10 @@ import com.pure.chageumtong.domain.Gear
 import com.pure.chageumtong.domain.LiveDrive
 import com.pure.chageumtong.domain.Place
 import com.pure.chageumtong.domain.Product
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,7 +26,11 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     val demoRunning: StateFlow<Boolean> = c.demo.running
     val zone = c.zone
     val products = c.catalog.products
-    val places = c.catalog.places
+    /** shortcut: 지도 중심 = 시연용 고정 좌표(서울시청, 시드 장소 근처), 실제 GPS를 붙이면 교체 */
+    val mapCenter = 37.5665 to 126.9780
+    private val _places = MutableStateFlow(c.catalog.places)
+    /** 시드 장소 + 카카오 로컬 API로 찾은 주변 현대오일뱅크 */
+    val places: StateFlow<List<Place>> = _places.asStateFlow()
     val demoRoute = c.demoRoute
 
     val data: StateFlow<AppData> = c.points.data.stateIn(viewModelScope, SharingStarted.Eagerly, AppData())
@@ -37,6 +44,10 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         live.state == DriveState.DRIVING ||
             (s != null && ((s.gear != Gear.P && s.gear != Gear.UNKNOWN) || s.speedMps > 0.1))
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    init {
+        viewModelScope.launch { _places.value = c.catalog.places + GasStationSearch.nearby(mapCenter.first, mapCenter.second) }
+    }
 
     fun startDemo() = c.demo.start()
 

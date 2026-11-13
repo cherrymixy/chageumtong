@@ -89,7 +89,7 @@ data class Product(
     val imageAsset: String,
 )
 
-enum class PlaceCategory { CHARGER, DEALER, BLUEHANDS }
+enum class PlaceCategory { CHARGER, DEALER, BLUEHANDS, GAS }
 
 /** mapX/mapY: 정적 지도 이미지 위 정규화 좌표 0~1 */
 @Serializable
