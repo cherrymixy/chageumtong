@@ -2,6 +2,7 @@ package com.pure.chageumtong.core
 
 import android.content.Context
 import com.pure.chageumtong.data.repo.AppStore
+import com.pure.chageumtong.data.repo.PlaceRepository
 import com.pure.chageumtong.data.repo.PointRepository
 import com.pure.chageumtong.data.repo.SessionRepository
 import com.pure.chageumtong.data.seed.CatalogLoader
@@ -32,12 +33,16 @@ class AppContainer(context: Context) {
     val demoRoute by lazy { DemoRouteLoader.load(appContext) }
     val demo = DemoVehicleDataSource(scope) { demoRoute }
 
+    /** 통계·날짜는 항상 한국 시간 기준 (에뮬레이터 기본 시간대가 America/Los_Angeles라서) */
+    val zone: ZoneId = ZoneId.of("Asia/Seoul")
+
     val catalog by lazy { CatalogLoader.load(appContext) }
     private val store = AppStore(appContext, scope)
     val sessions = SessionRepository(store)
-    val points = PointRepository(store) {
-        SeedData.create(System.currentTimeMillis(), ZoneId.systemDefault(), catalog.products)
+    val points = PointRepository(store, zone = { zone }) {
+        SeedData.create(System.currentTimeMillis(), zone, catalog.products)
     }
+    val places = PlaceRepository(store)
 
     private val _lastInput = MutableStateFlow<DriveInput?>(null)
     /** 엔진이 마지막으로 받은 입력 (디버그 표시용) */

@@ -44,3 +44,13 @@ class PointRepository(
         store.update { seed() }
     }
 }
+
+class PlaceRepository(private val store: AppStore) {
+    val favoriteIds: Flow<Set<String>> = store.data.map { it.favoritePlaceIds }
+
+    suspend fun toggleFavorite(placeId: String) {
+        store.update { d ->
+            d.copy(favoritePlaceIds = if (placeId in d.favoritePlaceIds) d.favoritePlaceIds - placeId else d.favoritePlaceIds + placeId)
+        }
+    }
+}
