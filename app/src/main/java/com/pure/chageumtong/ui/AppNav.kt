@@ -26,6 +26,7 @@ import com.pure.chageumtong.ui.components.GrayBox
 import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
 import com.pure.chageumtong.ui.screens.map.MapScreen
+import com.pure.chageumtong.ui.screens.shop.ShopScreen
 import com.pure.chageumtong.ui.theme.Blue
 import com.pure.chageumtong.ui.theme.BoxGray
 import com.pure.chageumtong.ui.theme.CardBg
@@ -69,7 +70,7 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                 }
             }
             composable("map") { MapScreen(vm) }
-            composable("shop") { GrayBox("상점 (준비 중)", Modifier.fillMaxSize()) }
+            composable("shop") { ShopScreen(vm) }
             composable("history") { GrayBox("적립 내역 (준비 중)", Modifier.fillMaxSize()) }
         }
         // 좌하단 플로팅 탭바: 홈/지도/상점에서만
