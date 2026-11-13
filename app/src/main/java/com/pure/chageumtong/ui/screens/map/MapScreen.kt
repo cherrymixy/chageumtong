@@ -316,10 +316,8 @@ private fun KakaoMapLayer(places: List<Place>, center: Pair<Double, Double>, onP
     // 카카오맵은 라벨 비트맵을 xhdpi(2x) 기준으로 보고 화면 밀도에 맞춰 줄인다(160dpi에선 0.5배) → 2x 픽셀로 넘김
     val labelScale = 2f / density.density
     val pinPx = with(density) { (fig(36).toPx() * labelScale).roundToInt() }
-    val unicornPx = with(density) { (fig(128).toPx() * labelScale).roundToInt() }
-    val unicorn = remember(unicornPx) {
-        Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.resources, R.drawable.unicorn_marker), unicornPx, unicornPx, true)
-    }
+    val px = { v: Float -> with(density) { fig(v).toPx() * labelScale } }
+    val (unicorn, unicornAnchorY) = remember(density) { unicornMarker(context, px(128f), px(11f), px(29f), px(4f)) }
 
     val mapView = remember {
         MapView(context).apply {
@@ -354,7 +352,10 @@ private fun KakaoMapLayer(places: List<Place>, center: Pair<Double, Double>, onP
         val m = map ?: return@LaunchedEffect
         val layer = m.labelManager?.layer ?: return@LaunchedEffect
         layer.removeAll()
-        layer.addLabel(LabelOptions.from(here).setStyles(LabelStyle.from(unicorn)))
+        // 유니콘은 장소 핀보다 위에 (rank 높을수록 위), 아래 파란 점이 실제 위치
+        layer.addLabel(
+            LabelOptions.from(here).setRank(1).setStyles(LabelStyle.from(unicorn).setAnchorPoint(0.5f, unicornAnchorY)),
+        )
         places.forEach { p ->
             layer.addLabel(
                 LabelOptions.from(LatLng.from(p.lat, p.lon))
@@ -373,7 +374,44 @@ private fun KakaoMapLayer(places: List<Place>, center: Pair<Double, Double>, onP
             Modifier.align(Alignment.BottomStart).padding(start = fig(43 - 19), bottom = fig(123 - 24)).size(fig(102))
                 .clickable { map?.moveCamera(CameraUpdateFactory.newCenterPosition(here), CameraAnimation.from(500, true, true)) },
         )
+        // 확대·축소 (Figma에 없음, 지도 오른쪽 아래). 버튼 하나 76×76, 흰 카드는 필터 칩과 같은 모양
+        Column(
+            Modifier.align(Alignment.BottomEnd).padding(end = fig(43), bottom = fig(32))
+                .shadow(fig(8), RoundedCornerShape(D.RadiusButton)).background(Color.White, RoundedCornerShape(D.RadiusButton)),
+        ) {
+            ZoomButton("+", "지도 확대") { map?.moveCamera(CameraUpdateFactory.zoomIn(), CameraAnimation.from(300, true, true)) }
+            HorizontalDivider(Modifier.width(MIN_TOUCH), thickness = fig(1.5), color = Track)
+            ZoomButton("−", "지도 축소") { map?.moveCamera(CameraUpdateFactory.zoomOut(), CameraAnimation.from(300, true, true)) }
+        }
     }
+}
+
+@Composable
+private fun ZoomButton(symbol: String, label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.size(MIN_TOUCH).clickable(onClickLabel = label, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { Text(symbol, style = T.Button, color = TextPlace) }
+}
+
+/**
+ * 현재 위치 마커 = 유니콘 + 간격 + 파란 점(흰 테두리), 정적 지도(95:2848)와 같은 모양.
+ * 반환: 비트맵과 앵커 y(0~1, 파란 점 중심) — 점이 실제 좌표에 오도록.
+ */
+private fun unicornMarker(context: android.content.Context, size: Float, gap: Float, dot: Float, ring: Float): Pair<Bitmap, Float> {
+    val w = size.roundToInt()
+    val h = (size + gap + dot).roundToInt()
+    val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val src = BitmapFactory.decodeResource(context.resources, R.drawable.unicorn_marker)
+    canvas.drawBitmap(Bitmap.createScaledBitmap(src, w, w, true), 0f, 0f, null)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val cy = size + gap + dot / 2
+    paint.color = android.graphics.Color.WHITE
+    canvas.drawCircle(w / 2f, cy, dot / 2, paint)
+    paint.color = Primary.toArgb()
+    canvas.drawCircle(w / 2f, cy, dot / 2 - ring, paint)
+    return bmp to cy / h
 }
 
 /** 흰 테두리 + 분류색 원 (정적 지도 핀과 같은 모양: 36 중 테두리 6) */
