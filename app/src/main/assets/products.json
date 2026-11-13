@@ -1,0 +1,15 @@
+[
+  { "id": "shop-wireless-mount", "tab": "SHOP", "name": "무선충전 송풍구 거치대", "priceLabel": "39,000원", "price": 39000, "imageAsset": "prod_wireless_mount" },
+  { "id": "shop-seat-cushion", "tab": "SHOP", "name": "메모리폼 시트 쿠션", "priceLabel": "29,000원", "price": 29000, "imageAsset": "prod_seat_cushion" },
+  { "id": "shop-trunk-organizer", "tab": "SHOP", "name": "트렁크 정리함", "priceLabel": "24,900원", "price": 24900, "imageAsset": "prod_trunk_organizer" },
+  { "id": "shop-floor-mat", "tab": "SHOP", "name": "프리미엄 카매트", "priceLabel": "89,000원", "price": 89000, "imageAsset": "prod_floor_mat" },
+  { "id": "shop-air-freshener", "tab": "SHOP", "name": "차량용 디퓨저", "priceLabel": "12,900원", "price": 12900, "imageAsset": "prod_air_freshener" },
+  { "id": "shop-dashcam-sd", "tab": "SHOP", "name": "블랙박스 전용 SD카드 128GB", "priceLabel": "19,900원", "price": 19900, "imageAsset": "prod_dashcam_sd" },
+
+  { "id": "bl-vgs", "tab": "BLUE_LINK", "name": "가상 기어 변속 VGS", "priceLabel": "2,400원/월", "price": 2400, "imageAsset": "prod_vgs" },
+  { "id": "bl-lighting", "tab": "BLUE_LINK", "name": "라이팅 패턴 (아이오닉 9)", "priceLabel": "4,800원/월", "price": 4800, "imageAsset": "prod_lighting" },
+  { "id": "bl-rspa2", "tab": "BLUE_LINK", "name": "원격 스마트 주차 보조 2", "priceLabel": "12,000원/월", "price": 12000, "imageAsset": "prod_rspa2" },
+  { "id": "bl-theme-unicorn", "tab": "BLUE_LINK", "name": "차금통 유니콘 테마", "priceLabel": "29,900원/평생", "price": 29900, "imageAsset": "prod_theme_unicorn" },
+  { "id": "bl-theme-pony", "tab": "BLUE_LINK", "name": "자연/포니 테마", "priceLabel": "29,900원/평생", "price": 29900, "imageAsset": "prod_theme_pony" },
+  { "id": "bl-theme-night", "tab": "BLUE_LINK", "name": "밤하늘 드라이브 테마", "priceLabel": "29,900원/평생", "price": 29900, "imageAsset": "prod_theme_night" }
+]

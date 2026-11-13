@@ -28,6 +28,7 @@ import com.pure.chageumtong.data.vehicle.PleosVehicleDataSource
 import com.pure.chageumtong.domain.DriveState
 import com.pure.chageumtong.domain.praise
 import com.pure.chageumtong.ui.theme.ChageumtongTheme
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -68,10 +69,18 @@ private fun DebugScreen(container: AppContainer, modifier: Modifier = Modifier) 
     val demoRunning by container.demo.running.collectAsState()
     val pleosOk by container.pleos.isAvailable.collectAsState()
     val input by container.lastInput.collectAsState()
+    val total by container.points.totalPoints.collectAsState(initial = 0)
+    val month by container.points.monthStats.collectAsState(initial = null)
+    val week by container.points.weekDailyKm.collectAsState(initial = emptyList())
     val big = 28.sp
 
     Column(modifier.padding(32.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("차금통 · 디버그", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+        Text("총 ${"%,d".format(total)}P · 이번 달 +${month?.earned ?: 0}P", fontSize = big, fontWeight = FontWeight.Bold)
+        month?.let {
+            Text("이번 달 주행 ${"%.1f".format(it.distanceKm)}km · 안전 ${"%.1f".format(it.safeKm)}km (${it.safeRatio}%)", fontSize = big)
+        }
+        Text("이번 주(월~일) ${week.joinToString(" / ") { "%.1f".format(it) }}", fontSize = big)
         Text("입력원: ${if (demoRunning) "데모" else "Pleos"}  (Pleos 사용 가능: $pleosOk)", fontSize = big)
         Text(
             "기어 ${input?.sample?.gear ?: "-"} · 속도 ${input?.sample?.let { (it.speedMps * 3.6).roundToInt() } ?: "-"} km/h · 제한 ${input?.segment?.limitKmh ?: "-"}",
@@ -90,8 +99,11 @@ private fun DebugScreen(container: AppContainer, modifier: Modifier = Modifier) 
             Button(onClick = { container.demo.start() }, enabled = !demoRunning && live.state != DriveState.DRIVING) {
                 Text("▶ 데모 주행", fontSize = big)
             }
-            Button(onClick = { container.resetDrive() }, enabled = live.state == DriveState.ENDED) {
-                Text(if (live.canClaim) "적립 처리 (초기화)" else "종료 (0.3km 미만, 적립 불가)", fontSize = big)
+            Button(onClick = { container.scope.launch { container.claimAndReset() } }, enabled = live.state == DriveState.ENDED) {
+                Text(if (live.canClaim) "적립하기" else "종료 (0.3km 미만, 적립 불가)", fontSize = big)
+            }
+            Button(onClick = { container.scope.launch { container.points.resetAll() } }) {
+                Text("데이터 초기화", fontSize = big)
             }
         }
     }
