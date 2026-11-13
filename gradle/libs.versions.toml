@@ -1,5 +1,6 @@
 [versions]
 kakaoMap = "2.15.2"
+coil = "2.7.0"
 agp = "9.5.1"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -18,6 +19,7 @@ datastore = "1.1.7"
 kotlinxSerialization = "1.9.0"
 
 [libraries]
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 kakao-map = { group = "com.kakao.maps.open", name = "android", version.ref = "kakaoMap" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

@@ -53,6 +53,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import coil.compose.AsyncImage
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -175,7 +176,11 @@ private fun SearchBar(query: String, enabled: Boolean, onChange: (String) -> Uni
 @Composable
 private fun PlaceCard(p: Place, favorite: Boolean, onFavorite: () -> Unit, onNavigate: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(fig(20))) {
-        AssetImage(p.imageAsset, Modifier.fillMaxWidth().height(fig(219)).clip(RoundedCornerShape(fig(21.3))))
+        Box(Modifier.fillMaxWidth().height(fig(219)).clip(RoundedCornerShape(fig(21.3)))) {
+            AssetImage(p.imageAsset, Modifier.matchParentSize())
+            // 인터넷 사진은 불러오기 전·실패 시 투명 → 아래 그림(그라데이션)이 보임
+            p.imageUrl?.let { AsyncImage(it, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop) }
+        }
         Box(Modifier.fillMaxWidth().padding(horizontal = fig(12))) {
             Column(verticalArrangement = Arrangement.spacedBy(fig(15))) {
                 Column(verticalArrangement = Arrangement.spacedBy(fig(4))) {

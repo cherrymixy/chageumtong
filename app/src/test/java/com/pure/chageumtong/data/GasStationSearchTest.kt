@@ -25,4 +25,10 @@ class GasStationSearchTest {
         assertEquals(37.566, p.lat, 1e-9)
         assertEquals(126.978, p.lon, 1e-9)
     }
+
+    @Test
+    fun parseImage_firstResultOrNull() {
+        assertEquals("https://a/1.jpg", GasStationSearch.parseImage("""{"documents":[{"image_url":"https://a/1.jpg","width":1},{"image_url":"https://a/2.jpg"}]}"""))
+        assertEquals(null, GasStationSearch.parseImage("""{"meta":{"total_count":0},"documents":[]}"""))
+    }
 }

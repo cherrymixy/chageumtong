@@ -107,4 +107,6 @@ data class Place(
     val lat: Double,
     val lon: Double,
     val imageAsset: String,
+    /** 인터넷 사진 (카카오 이미지 검색 결과). 있으면 imageAsset 위에 덮어 보여줌 */
+    val imageUrl: String? = null,
 )
