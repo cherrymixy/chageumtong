@@ -54,6 +54,26 @@ object T {
     val BubbleLocation = style(20, FontWeight.SemiBold)
     val HeaderSub = style(26, FontWeight.SemiBold)
     val AdBadge = style(14, FontWeight.SemiBold, 1.1f)
+
+    // STEP 8: 상점(95:2870) · 지도(95:2751)
+    val ToggleOn = style(30.5, FontWeight.Bold)
+    val ToggleOff = style(30.5, FontWeight.Medium)
+    val PointsLabel = style(22, FontWeight.SemiBold)
+    val ProductName = style(23.15, FontWeight.SemiBold)
+    val ProductPrice = style(28, FontWeight.SemiBold)
+    val SmallButton = style(21, FontWeight.SemiBold, 1.1f)
+    val Search = style(20, FontWeight.Medium)
+    val PlaceName = style(22, FontWeight.SemiBold)
+    val PlaceSub = style(20, FontWeight.Medium)
+    val PlaceMeta = style(20, FontWeight.Medium, 1.1f)
+
+    // STEP 8: Figma에 없는 화면(구매 팝업·적립 내역)은 차량 가독성 기준 24sp 이상
+    val DialogTitle = style(30, FontWeight.Bold)
+    val DialogName = style(28, FontWeight.Bold)
+    val DialogPrice = style(36, FontWeight.Bold)
+    val DialogBody = style(24, FontWeight.Medium)
+    val RowTitle = style(26, FontWeight.SemiBold)
+    val RowAmount = style(32, FontWeight.Bold)
 }
 
 val Typography = Typography(

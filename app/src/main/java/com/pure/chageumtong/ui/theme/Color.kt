@@ -17,6 +17,8 @@ val Alert = Color(0xFFFE9126) // 분석 칩·말풍선·지도 미적립
 val AlertTint = Color(0xFFFFF6ED)
 val BubbleStroke = Color(0xFF858585)
 val AdBadge = Color(0x52000000) // 32%
+val Scrim = Color(0xFF1F1F1F) // 상점 카드 위아래 그라데이션
+val DealerRed = Color(0xFFFE6534) // 지도 대리점 칩
 
 // 글자
 val TextTitle = Color(0xFF000000)
@@ -31,6 +33,10 @@ val TextBody = Color(0xFF404040)
 val TextChipOff = Color(0xFF2F2F2F)
 val TextSection = Color(0xFF3B3B3B)
 val OnPrimary = Color(0xFFFDFEFF)
+val TextToggleOff = Color(0xFF777777)
+val TextSearch = Color(0xFF737373)
+val TextPlace = Color(0xFF0F0F0F)
+val TextPlaceSub = Color(0xFFABABAB)
 
 // STEP 5 회색박스 화면(지도·상점·내역)이 쓰는 이름 → Figma 토큰으로 연결 (STEP 8에서 정리)
 val Blue = Primary
