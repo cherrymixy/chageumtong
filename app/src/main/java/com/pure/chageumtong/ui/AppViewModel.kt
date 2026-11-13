@@ -3,7 +3,7 @@ package com.pure.chageumtong.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pure.chageumtong.core.AppContainer
-import com.pure.chageumtong.data.navi.GasStationSearch
+import com.pure.chageumtong.data.navi.PlaceSearch
 import com.pure.chageumtong.data.repo.AppData
 import com.pure.chageumtong.data.repo.MonthStats
 import com.pure.chageumtong.data.repo.PurchaseResult
@@ -29,7 +29,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     /** shortcut: 지도 중심 = 시연용 고정 좌표(서울시청, 시드 장소 근처), 실제 GPS를 붙이면 교체 */
     val mapCenter = 37.5665 to 126.9780
     private val _places = MutableStateFlow(c.catalog.places)
-    /** 시드 장소 + 카카오 로컬 API로 찾은 주변 현대오일뱅크 */
+    /** 카카오 로컬 API로 찾은 주변 사용처. 키가 없거나 검색 실패면 시드 장소 */
     val places: StateFlow<List<Place>> = _places.asStateFlow()
     val demoRoute = c.demoRoute
 
@@ -46,7 +46,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
-        viewModelScope.launch { _places.value = c.catalog.places + GasStationSearch.nearby(mapCenter.first, mapCenter.second) }
+        viewModelScope.launch { PlaceSearch.nearby(mapCenter.first, mapCenter.second).takeIf { it.isNotEmpty() }?.let { _places.value = it } }
     }
 
     fun startDemo() = c.demo.start()

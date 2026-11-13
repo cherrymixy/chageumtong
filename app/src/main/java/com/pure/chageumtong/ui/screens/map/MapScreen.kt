@@ -268,7 +268,7 @@ private fun StaticLayer(places: List<Place>) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         Image(painterResource(R.drawable.map_static), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
         val pin = fig(36)
-        places.filter { it.category != PlaceCategory.GAS }.forEach { p -> // 카카오 검색분은 그림 위 좌표가 없음
+        places.forEach { p ->
             Box(
                 Modifier.offset(maxWidth * p.mapX - pin / 2, maxHeight * p.mapY - pin / 2).size(pin)
                     .shadow(fig(4), CircleShape).background(Color.White, CircleShape).padding(fig(6))
