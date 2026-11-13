@@ -1,6 +1,16 @@
 package com.pure.chageumtong.ui.components
 
 import androidx.compose.foundation.Canvas
+import com.pure.chageumtong.ui.theme.TextLocation
+import com.pure.chageumtong.ui.theme.TextBody
+import com.pure.chageumtong.ui.theme.BubbleStroke
+import com.pure.chageumtong.ui.theme.Alert
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -236,7 +246,7 @@ private fun pointAt(points: List<Offset>, f: Float): Offset {
 }
 
 /**
- * 분석 화면 지도: 경로(파랑) + 미적립 구간(주황) + 선택 이벤트 말풍선.
+ * 분석 화면 지도 (Figma 95:2689 우측): 지도 이미지 + 경로(Primary) + 미적립 구간(Alert) + 선택 이벤트 말풍선.
  * shortcut: 위치는 km 비율로 데모 폴리라인에 투영, 실주행 GPS 경로 기록은 범위 밖(PRD §11 Won't).
  */
 @Composable
@@ -247,39 +257,80 @@ fun RouteMap(
     selected: Int,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier.background(BoxGray, RoundedCornerShape(fig(24)))) {
+    BoxWithConstraints(modifier) {
         val density = LocalDensity.current
         val wPx = with(density) { maxWidth.toPx() }
         val hPx = with(density) { maxHeight.toPx() }
         val pts = polyline.map { Offset(it[0] * wPx, it[1] * hPx) }
         fun f(km: Double) = if (distanceKm <= 0) 0f else (km / distanceKm).toFloat()
 
-        Label("지도 이미지 자리", Modifier.align(Alignment.TopStart).padding(fig(16)))
+        Image(painterResource(R.drawable.route_map), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop, alignment = Alignment.TopStart)
         Canvas(Modifier.fillMaxSize()) {
-            val stroke = Stroke(fig(10).toPx(), cap = StrokeCap.Round)
-            drawPath(Path().apply { pts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) } }, Blue, style = stroke)
-            violations.forEachIndexed { i, v ->
+            val stroke = Stroke(fig(40).toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+            drawPath(Path().apply { pts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y) } }, Primary, style = stroke)
+            violations.forEach { v ->
                 val seg = Path()
                 for (k in 0..20) {
                     val p = pointAt(pts, f(v.segmentStartKm) + (f(v.segmentEndKm) - f(v.segmentStartKm)) * k / 20f)
                     if (k == 0) seg.moveTo(p.x, p.y) else seg.lineTo(p.x, p.y)
                 }
-                drawPath(seg, Orange, style = Stroke(fig(if (i == selected) 18 else 12).toPx(), cap = StrokeCap.Round))
+                drawPath(seg, Alert, style = Stroke(fig(40).toPx(), cap = StrokeCap.Butt, join = StrokeJoin.Round))
             }
         }
         violations.getOrNull(selected)?.let { v ->
             val p = pointAt(pts, f(v.atKm))
-            val cardW = with(density) { fig(380).toPx() }
-            val x = (p.x - cardW / 2).coerceIn(0f, max(0f, wPx - cardW))
-            val y = (p.y - with(density) { fig(260).toPx() }).coerceAtLeast(0f)
-            SectionCard(
-                Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) }.width(fig(380)),
-                color = Color.White,
-            ) {
-                Label(v.locationLabel)
-                Text(v.title, fontSize = BODY, fontWeight = FontWeight.Bold, color = Orange)
-                Text(v.description, fontSize = BODY, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            }
+            val cardW = with(density) { fig(588).toPx() }
+            val cardH = with(density) { fig(362).toPx() }
+            // 말풍선 꼬리 끝(좌상단)이 선택 지점을 가리키도록. 넘치면 화면 안으로 밀어 넣는다.
+            val x = (p.x + with(density) { fig(24).toPx() }).coerceIn(0f, max(0f, wPx - cardW))
+            val y = (p.y + with(density) { fig(24).toPx() }).let { if (it + cardH > hPx) p.y - cardH - with(density) { fig(24).toPx() } else it }.coerceAtLeast(0f)
+            Bubble(v, Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) }.width(fig(588)))
         }
+    }
+}
+
+/** 말풍선 (Figma Union 95:2739): 흰 바탕 + #858585 2px 테두리, 좌상단 꼬리 */
+@Composable
+private fun Bubble(v: Violation, modifier: Modifier) {
+    val tailW = fig(98)
+    val tailH = fig(22)
+    val radius = fig(32)
+    val body = v.description
+    val cut = body.lastIndexOf(". ", body.length - 2)
+    val text = buildAnnotatedString {
+        if (cut < 0) append(body) else {
+            append(body.substring(0, cut + 1))
+            append("\n")
+            withStyle(SpanStyle(fontWeight = FontWeight.ExtraBold)) { append(body.substring(cut + 2)) }
+        }
+    }
+    Column(
+        modifier
+            .drawBehind {
+                val th = tailH.toPx()
+                val r = radius.toPx()
+                val path = Path().apply {
+                    moveTo(0f, 0f) // 꼬리 끝
+                    lineTo(tailW.toPx(), th)
+                    lineTo(size.width - r, th)
+                    quadraticTo(size.width, th, size.width, th + r)
+                    lineTo(size.width, size.height - r)
+                    quadraticTo(size.width, size.height, size.width - r, size.height)
+                    lineTo(r, size.height)
+                    quadraticTo(0f, size.height, 0f, size.height - r)
+                    close()
+                }
+                drawPath(path, Color.White)
+                drawPath(path, BubbleStroke, style = Stroke(fig(2).toPx()))
+            }
+            .padding(start = fig(33), top = tailH + fig(36), end = fig(28), bottom = fig(30)),
+        verticalArrangement = Arrangement.spacedBy(fig(8)),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(painterResource(R.drawable.ic_pin), null, Modifier.size(fig(42), fig(29)))
+            Text(v.locationLabel, style = T.BubbleLocation, color = TextLocation)
+        }
+        Text(v.title, style = T.BubbleTitle, color = Alert)
+        Text(text, style = T.BubbleBody, color = TextBody)
     }
 }
