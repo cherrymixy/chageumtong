@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,7 @@ fun ShopScreen(vm: AppViewModel) {
     var tab by remember { mutableStateOf(ShopTab.BLUE_LINK) }
     var confirm by remember { mutableStateOf<Product?>(null) }
     val total = data.totalPoints
+    LaunchedEffect(driving) { if (driving) confirm = null } // 정차 중 열어둔 구매 창도 출발하면 닫음 (PRD §7)
 
     Column(Modifier.fillMaxSize().padding(start = fig(31), top = fig(32), end = fig(31))) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

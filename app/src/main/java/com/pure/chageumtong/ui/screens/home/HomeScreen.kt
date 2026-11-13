@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -58,6 +59,7 @@ import com.pure.chageumtong.ui.components.fmtKm
 import com.pure.chageumtong.ui.components.fmtP
 import com.pure.chageumtong.ui.theme.AdBadge
 import com.pure.chageumtong.ui.theme.D
+import com.pure.chageumtong.ui.theme.MIN_TOUCH
 import com.pure.chageumtong.ui.theme.OnPrimary
 import com.pure.chageumtong.ui.theme.Primary
 import com.pure.chageumtong.ui.theme.PrimaryDark
@@ -187,7 +189,9 @@ private fun Stat(label: String, value: String, unit: String) {
 private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Unit) {
     val data by vm.data.collectAsState()
     val month by vm.month.collectAsState()
+    val driving by vm.isDriving.collectAsState()
     var confirmReset by remember { mutableStateOf(false) }
+    LaunchedEffect(driving) { if (driving) confirmReset = false }
 
     Box(Modifier.fillMaxWidth().height(fig(334)).card(Primary)) {
         Image(painterResource(R.drawable.carrot_big), null, Modifier.offset(fig(259), fig(43)).size(fig(329), fig(336)))
@@ -195,10 +199,10 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
             Modifier.offset(fig(248), fig(221)).size(fig(308), fig(113))
                 .background(Brush.verticalGradient(listOf(Primary.copy(alpha = 0f), Primary))),
         )
-        // 숨김 메뉴: 제목 길게 누르기 → 데이터 초기화 (PRD §8)
+        // 숨김 메뉴: 제목 길게 누르기 → 데이터 초기화 (PRD §8). 주행 중엔 막음 (PRD §7)
         Text(
             "총 적립 포인트",
-            Modifier.offset(fig(35), fig(29)).combinedClickable(onClick = {}, onLongClick = { confirmReset = true }),
+            Modifier.offset(fig(35), fig(29)).combinedClickable(enabled = !driving, onClick = {}, onLongClick = { confirmReset = true }),
             style = T.Label, color = OnPrimary,
         )
         Row(Modifier.offset(fig(35), fig(69)), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(fig(6.3))) {
@@ -217,9 +221,9 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
         AlertDialog(
             onDismissRequest = { confirmReset = false },
             title = { Text("데이터 초기화", style = T.Section) },
-            text = { Text("주행·포인트 기록을 처음 상태(시드 데이터)로 되돌릴까요?", style = T.Label) },
-            confirmButton = { TextButton({ vm.resetAll(); confirmReset = false }) { Text("초기화", style = T.Button) } },
-            dismissButton = { TextButton({ confirmReset = false }) { Text("취소", style = T.Button) } },
+            text = { Text("주행·포인트 기록을 처음 상태(시드 데이터)로 되돌릴까요?", style = T.DialogBody) },
+            confirmButton = { TextButton({ vm.resetAll(); confirmReset = false }, Modifier.heightIn(min = MIN_TOUCH)) { Text("초기화", style = T.Button) } },
+            dismissButton = { TextButton({ confirmReset = false }, Modifier.heightIn(min = MIN_TOUCH)) { Text("취소", style = T.Button) } },
         )
     }
 }

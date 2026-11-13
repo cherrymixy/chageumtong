@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +83,8 @@ fun MapScreen(vm: AppViewModel) {
     var query by remember { mutableStateOf("") }
     var filters by remember { mutableStateOf(emptySet<PlaceCategory>()) }
     val context = LocalContext.current
+    // 주행 중엔 검색어를 고칠 수 없으니, 출발하면 비워서 목록 전체를 보여줌 (PRD §7)
+    LaunchedEffect(driving) { if (driving) query = "" }
 
     val list = vm.places.filter { p ->
         (filters.isEmpty() || p.category in filters) &&
