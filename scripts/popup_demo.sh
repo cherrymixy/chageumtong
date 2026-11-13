@@ -21,12 +21,14 @@ step() {
 speed 0; gear Park
 "$ADB" shell am start -n $PKG/.MainActivity >/dev/null </dev/null
 
-step "1) 주행 + 위젯: Enter 후 30초 달려요. 그동안 하단 [내비] 아이콘을 눌러 보세요 → 아래에 '이번 주행 포인트' 위젯" 3
+step "1) 주행 + 위젯: Enter 후 60초 달려요. 그동안 하단 [내비] 아이콘을 눌러 보세요 → 아래에 '이번 주행 포인트' 위젯" 3
 gear Drive; sleep 1
-for ((i = 0; i < 30; i++)); do speed 60; sleep 1; done
-"$ADB" shell am start -n $PKG/.MainActivity >/dev/null </dev/null # 차금통으로 돌아오기 (위젯을 눌러도 돌아옴)
+# 70km/h × 60초 ≈ 1.2km → 1P. 기본 제한 60 + 10 이하라 과속 아님
+for ((i = 0; i < 60; i++)); do speed 70; sleep 1; done
 for s in 30 0; do speed "$s"; sleep 1; done
 gear Park
+# 정차·P 뒤에 차금통으로 돌아오기 (팝업은 앱 안에서 뜸). 주행 중엔 앱을 억지로 열지 않는다
+"$ADB" shell am start -n $PKG/.MainActivity >/dev/null </dev/null
 echo "  정차·P 완료 → 2초 뒤 '🚗 NP가 쌓였어요!' 팝업. 확인했으면 [닫기]를 누르세요 (적립하면 2번이 안 떠요)"
 
 step "2) 재탑승: Enter 누르면 기어 N(정차) → '잊어버린 포인트가 있어요..' 팝업. 이번엔 [포인트 적립하기]를 누르세요" 10
