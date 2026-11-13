@@ -21,12 +21,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // 카카오 키는 local.properties(레포 밖)에서 읽는다. 없으면 빈 값 → 지도는 기존 그림으로 대체
+        // 카카오 지도 키는 local.properties(레포 밖)에서 읽는다. 없으면 빈 값 → 지도는 기존 그림으로 대체
+        // REST 키는 앱에 넣지 않는다: 사용처 목록은 scripts/fetch_kakao_places.py 로 미리 받아 assets에 둠
         val local = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
         }
         buildConfigField("String", "KAKAO_NATIVE_KEY", "\"${local.getProperty("KAKAO_NATIVE_KEY", "")}\"")
-        buildConfigField("String", "KAKAO_REST_KEY", "\"${local.getProperty("KAKAO_REST_KEY", "")}\"")
     }
 
     // 서명 키·비밀번호는 레포 밖(~/keys, ~/.gradle/gradle.properties)에 둔다. 없으면 release는 미서명으로 빌드됨

@@ -72,11 +72,11 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 | 이름 | 버전 | 용도 |
 |---|---|---|
 | [카카오맵 Android SDK v2](https://apis.map.kakao.com/android_v2/) | 2.15.2 | 지도 화면의 실제 지도, 장소 핀·현재 위치 마커, 확대·축소 |
-| [카카오 로컬 API](https://developers.kakao.com/docs/latest/ko/local/dev-guide) (키워드 검색) | v2 | 주변 전기차 충전소·현대자동차 지점·블루핸즈·현대오일뱅크 검색 (분류별 최대 10곳, 가까운 순) |
-| [Daum 검색 API](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide) (이미지 검색) | v2 | 장소 카드 사진: 장소 이름으로 검색한 첫 번째 이미지 |
+| [카카오 로컬 API](https://developers.kakao.com/docs/latest/ko/local/dev-guide) (키워드 검색) | v2 | 주변 전기차 충전소·현대자동차 지점·블루핸즈·현대오일뱅크 (분류별 최대 10곳, 가까운 순). `scripts/fetch_kakao_places.py`로 미리 받아 `assets/places_kakao.json`에 저장 |
+| [Daum 검색 API](https://developers.kakao.com/docs/latest/ko/daum-search/dev-guide) (이미지 검색) | v2 | 장소 카드 사진: 장소 이름으로 검색한 첫 번째 이미지의 주소 (같은 스크립트로 미리 받음) |
 | [Coil](https://github.com/coil-kt/coil) | 2.7.0 | 인터넷 사진 불러오기 (Apache License 2.0) |
 
-카카오 키는 `local.properties`(레포 미포함)의 `KAKAO_NATIVE_KEY`, `KAKAO_REST_KEY`에서 읽습니다. 키가 없으면 지도는 기존 정적 지도 그림과 시드 장소로 표시됩니다.
+카카오 키는 `local.properties`(레포 미포함)에서 읽습니다. 앱에는 **지도용 네이티브 앱 키만** 들어가며(카카오 콘솔에 등록한 패키지명·서명에서만 동작), REST 키는 스크립트 실행용이라 APK에 포함되지 않습니다. 네이티브 키가 없으면 지도는 기존 정적 지도 그림과 시드 장소로 표시됩니다.
 
 화면과 점수 엔진은 데이터가 실차에서 왔는지 데모에서 왔는지 모릅니다. 분기는 `VehicleDataSource` 구현체(`PleosVehicleDataSource` / `DemoVehicleDataSource`)에서만 합니다.
 
@@ -97,6 +97,6 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 - 유니콘·도시·당근 일러스트, 아이콘, 분석 화면 지도 배경: 팀 삼남매 자체 제작
 - 광고 배너 차량 사진, 상점 상품 사진(가상 기어 변속·라이팅 패턴·원격 스마트 주차 보조 2·자연/포니 테마), 카카오 키가 없을 때의 지도 장소 사진(충전소·대리점·블루핸즈): **시연용, 저작권 현대자동차**
 - 지도 타일·장소 정보: **ⓒ Kakao** (카카오맵 SDK, 카카오 로컬 API). 지도 오른쪽 아래 kakao 로고는 SDK가 표시합니다.
-- 지도 화면 장소 카드 사진: **Daum 이미지 검색 결과를 앱 실행 중에 불러와 표시**하며, 레포와 APK에는 포함되지 않습니다. 저작권은 각 이미지의 원 게시자(블로그·웹사이트 등)에게 있고, 공모전 시연 목적으로만 사용합니다. 검색 결과가 없는 장소는 사진 없이 표시합니다. 상업적으로 배포할 경우 사진은 권리를 확보한 이미지로 교체해야 합니다.
+- 지도 화면 장소 카드 사진: **Daum 이미지 검색 결과의 이미지 주소만 저장하고 앱 실행 중에 불러와 표시**하며, 사진 파일은 레포와 APK에 포함되지 않습니다. 저작권은 각 이미지의 원 게시자(블로그·웹사이트 등)에게 있고, 공모전 시연 목적으로만 사용합니다. 검색 결과가 없는 장소는 사진 없이 표시합니다. 상업적으로 배포할 경우 사진은 권리를 확보한 이미지로 교체해야 합니다.
 - 사진이 없는 상품은 테마색 그라데이션 카드로 표시합니다. 서드파티 캐릭터(IP) 이미지는 사용하지 않습니다.
 - 폰트: [Pretendard](https://github.com/orioncactus/pretendard) — SIL Open Font License 1.1 (`docs/PRETENDARD_LICENSE.txt`)

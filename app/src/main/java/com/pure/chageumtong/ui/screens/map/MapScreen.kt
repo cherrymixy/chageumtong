@@ -111,7 +111,7 @@ private fun distance(m: Int) = if (m < 1000) "${m}m" else "%.1fkm".format(m / 10
 fun MapScreen(vm: AppViewModel) {
     val driving by vm.isDriving.collectAsState()
     val favorites by vm.favorites.collectAsState()
-    val places by vm.places.collectAsState()
+    val places = vm.places
     var query by remember { mutableStateOf("") }
     var filters by remember { mutableStateOf(emptySet<PlaceCategory>()) }
     val context = LocalContext.current
