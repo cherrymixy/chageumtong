@@ -19,7 +19,7 @@ import java.net.URLEncoder
 /**
  * 카카오 로컬 API 키워드 검색으로 주변 포인트 사용처(충전소·대리점·블루핸즈·현대오일뱅크)를 찾는다.
  * GET https://dapi.kakao.com/v2/local/search/keyword.json, 헤더 `Authorization: KakaoAK {REST 키}`.
- * 카드 사진은 카카오 이미지 검색(GET /v2/search/image)의 첫 결과. 블로그 사진이라 로고·지도 캡처가 섞일 수 있음.
+ * 카드 사진은 카카오 이미지 검색(GET /v2/search/image)의 첫 결과(없으면 사진 없이 표시). 블로그 사진이라 로고·지도 캡처가 섞일 수 있음.
  * REST 키가 없거나 요청이 실패하면 빈 목록 (지도 화면은 시드 장소를 보여줌).
  */
 object PlaceSearch {
@@ -28,11 +28,11 @@ object PlaceSearch {
     private val json = Json { ignoreUnknownKeys = true }
 
     /** tag: 장소 이름+카카오 분류명(공백 제거)에 들어 있어야 하는 글자. 키워드 검색엔 다른 업종이 섞여 와서 거른다 */
-    internal enum class Spec(val category: PlaceCategory, val query: String, val tag: String, val groupCode: String?, val imageAsset: String) {
-        CHARGER(PlaceCategory.CHARGER, "전기차충전소", "전기차충전소", null, "place_charger"),
-        DEALER(PlaceCategory.DEALER, "현대자동차 지점", "자동차판매점>현대자동차", null, "place_dealer"),
-        BLUEHANDS(PlaceCategory.BLUEHANDS, "블루핸즈", "블루핸즈", null, "place_bluehands"),
-        GAS(PlaceCategory.GAS, "현대오일뱅크", "현대오일뱅크", "OL7", "place_gas"),
+    internal enum class Spec(val category: PlaceCategory, val query: String, val tag: String, val groupCode: String?) {
+        CHARGER(PlaceCategory.CHARGER, "전기차충전소", "전기차충전소", null),
+        DEALER(PlaceCategory.DEALER, "현대자동차 지점", "자동차판매점>현대자동차", null),
+        BLUEHANDS(PlaceCategory.BLUEHANDS, "블루핸즈", "블루핸즈", null),
+        GAS(PlaceCategory.GAS, "현대오일뱅크", "현대오일뱅크", "OL7"),
     }
 
     @Serializable private data class Res(val documents: List<Doc> = emptyList())
@@ -56,7 +56,7 @@ object PlaceSearch {
         if (key.isBlank()) return@withContext emptyList()
         coroutineScope {
             val places = Spec.entries.map { s -> async { search(s, lat, lon, key) } }.awaitAll().flatten()
-            // 사진은 장소마다 따로 검색 (실패한 곳은 분류별 기본 사진)
+            // 사진은 장소마다 따로 검색 (실패한 곳은 사진 없음)
             places.map { p -> async { p.copy(imageUrl = imageFor(p.name, key)) } }.awaitAll()
         }
     }
@@ -107,7 +107,7 @@ object PlaceSearch {
                     mapY = 0f,
                     lat = d.y.toDouble(),
                     lon = d.x.toDouble(),
-                    imageAsset = s.imageAsset,
+                    imageAsset = "", // 시드 그림 대신 검색 사진만 씀
                 )
             }
 }

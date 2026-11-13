@@ -37,7 +37,6 @@ class PlaceSearchTest {
         """.trimIndent()
         val places = PlaceSearch.parse(body, PlaceSearch.Spec.DEALER)
         assertEquals(listOf("현대자동차 종로지점"), places.map { it.name })
-        assertEquals("place_dealer", places[0].imageAsset)
     }
 
     @Test

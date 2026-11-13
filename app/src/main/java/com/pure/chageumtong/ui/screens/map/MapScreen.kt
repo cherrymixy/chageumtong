@@ -25,10 +25,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -84,6 +85,7 @@ import com.pure.chageumtong.ui.theme.TextPlace
 import com.pure.chageumtong.ui.theme.TextPlaceSub
 import com.pure.chageumtong.ui.theme.TextSearch
 import com.pure.chageumtong.ui.theme.TextTertiary
+import com.pure.chageumtong.ui.theme.Track
 import com.pure.chageumtong.ui.theme.fig
 
 private val PlaceCategory.label get() = when (this) {
@@ -136,15 +138,18 @@ fun MapScreen(vm: AppViewModel) {
             LazyColumn(
                 Modifier.weight(1f),
                 contentPadding = PaddingValues(start = fig(36), top = fig(42), end = fig(36), bottom = fig(36)),
-                verticalArrangement = Arrangement.spacedBy(fig(57)),
             ) {
-                items(list, key = { it.id }) { p ->
-                    PlaceCard(
-                        p,
-                        favorite = p.id in favorites,
-                        onFavorite = { vm.toggleFavorite(p.id) },
-                        onNavigate = { navigate(p) },
-                    )
+                itemsIndexed(list, key = { _, p -> p.id }) { i, p ->
+                    Column {
+                        // 카드 사이 디바이더 (Figma엔 없음, 사진 없는 카드가 섞여 구분용). 위아래 여백 합 = 기존 카드 간격 57
+                        if (i > 0) HorizontalDivider(Modifier.padding(vertical = fig(28)), thickness = fig(1.5), color = Track)
+                        PlaceCard(
+                            p,
+                            favorite = p.id in favorites,
+                            onFavorite = { vm.toggleFavorite(p.id) },
+                            onNavigate = { navigate(p) },
+                        )
+                    }
                 }
             }
         }
@@ -176,10 +181,14 @@ private fun SearchBar(query: String, enabled: Boolean, onChange: (String) -> Uni
 @Composable
 private fun PlaceCard(p: Place, favorite: Boolean, onFavorite: () -> Unit, onNavigate: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(fig(20))) {
-        Box(Modifier.fillMaxWidth().height(fig(219)).clip(RoundedCornerShape(fig(21.3)))) {
-            AssetImage(p.imageAsset, Modifier.matchParentSize())
-            // 인터넷 사진은 불러오기 전·실패 시 투명 → 아래 그림(그라데이션)이 보임
-            p.imageUrl?.let { AsyncImage(it, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop) }
+        // 사진: 검색 사진 → 시드 그림 순. 둘 다 없거나 불러오기 실패면 사진 영역 자체를 뺌
+        val photo = Modifier.fillMaxWidth().height(fig(219)).clip(RoundedCornerShape(fig(21.3)))
+        var urlFailed by remember(p.imageUrl) { mutableStateOf(false) }
+        val url = p.imageUrl?.takeUnless { urlFailed }
+        if (url != null) {
+            AsyncImage(url, null, photo, contentScale = ContentScale.Crop, onError = { urlFailed = true })
+        } else if (p.imageAsset.isNotEmpty()) {
+            AssetImage(p.imageAsset, photo)
         }
         Box(Modifier.fillMaxWidth().padding(horizontal = fig(12))) {
             Column(verticalArrangement = Arrangement.spacedBy(fig(15))) {
