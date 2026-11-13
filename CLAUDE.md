@@ -7,7 +7,7 @@
 - 에뮬레이터 실행·Android Studio 클릭 작업은 내가 한다. 필요하면 "승아가 할 것"으로 분리해서 알려줘라.
 
 ## 1. 프로젝트
-- 앱: 차금통 / 팀: pure / 패키지: `com.pure.chageumtong`
+- 앱: 차금통 / 팀: 삼남매 / 패키지: `com.pure.chageumtong`
 - 대상: Pleos Connect Emulator v2.1.0 (Automotive, API 34, 2560×1440, 160dpi, 가로 고정)
 - 스택: Kotlin · Jetpack Compose(Material3) · Navigation Compose · ViewModel+StateFlow · DataStore+kotlinx.serialization · 수동 DI(AppContainer). **Hilt 쓰지 마.**
 - minSdk 28 / compileSdk·targetSdk 37 (현재 AGP 9.5 템플릿 유지) / Gradle 8+
