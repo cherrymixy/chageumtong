@@ -56,6 +56,7 @@ import com.pure.chageumtong.ui.components.countUp
 import com.pure.chageumtong.ui.components.ProgressRail
 import com.pure.chageumtong.ui.components.SemiGauge
 import com.pure.chageumtong.ui.components.WeekBars
+import com.pure.chageumtong.ui.components.cardKm
 import com.pure.chageumtong.ui.components.fmtKm
 import com.pure.chageumtong.ui.components.fmtP
 import com.pure.chageumtong.ui.theme.AdBadge
@@ -229,8 +230,6 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
     }
 }
 
-/** 30일 누적은 네 자리 km가 돼서 카드 폭을 넘음 → 100km 이상은 소수점 없이 "1,429" */
-private fun cardKm(km: Double) = if (km >= 100) "%,d".format(kotlin.math.round(km).toInt()) else fmtKm(km)
 
 @Composable
 private fun CardTitle(title: String, value: String, valueColor: Color) {

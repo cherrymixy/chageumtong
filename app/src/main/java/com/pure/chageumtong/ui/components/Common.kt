@@ -91,6 +91,9 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 fun fmtKm(km: Double) = "%.1f".format(km)
+
+/** 누적 km는 네 자리가 돼서 카드 폭을 넘음 → 100km 이상은 소수점 없이 "1,429" (홈·마이) */
+fun cardKm(km: Double) = if (km >= 100) "%,d".format(kotlin.math.round(km).toInt()) else fmtKm(km)
 fun fmtP(p: Int) = "%,d".format(p)
 
 /** 숫자 카운트업: 처음엔 start, target이 바뀔 때마다 지금 보이는 값에서 target까지 올라감. 화면 이동 후에도 마지막 값 기억 */

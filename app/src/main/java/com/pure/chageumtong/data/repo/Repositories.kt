@@ -39,9 +39,13 @@ class PointRepository(
         store.update { if (it.seeded) it else seed() }
     }
 
-    /** 설정의 숨김 메뉴 "데이터 초기화" */
+    /** 데이터 초기화 (홈 숨김 메뉴·마이페이지). 음성 안내 설정은 유지 */
     suspend fun resetAll() {
-        store.update { seed() }
+        store.update { seed().copy(ttsOn = it.ttsOn) }
+    }
+
+    suspend fun setTts(on: Boolean) {
+        store.update { it.copy(ttsOn = on) }
     }
 }
 

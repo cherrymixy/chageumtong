@@ -55,7 +55,13 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     fun navigate(place: Place, onResult: (Boolean) -> Unit) = c.navi.route(place, onResult)
 
     /** 분석 화면 진입(새 적립) 시 1회 음성 안내 */
-    fun announcePoints(points: Int) = c.tts.announcePoints(points)
+    fun announcePoints(points: Int) {
+        if (data.value.ttsOn) c.tts.announcePoints(points)
+    }
+
+    fun setTts(on: Boolean) {
+        viewModelScope.launch { c.points.setTts(on) }
+    }
 
     fun purchase(product: Product, onResult: (PurchaseResult) -> Unit) {
         viewModelScope.launch { onResult(c.points.purchase(product)) }

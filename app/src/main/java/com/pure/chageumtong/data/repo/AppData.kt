@@ -20,6 +20,8 @@ data class AppData(
     val ownedProductIds: Set<String> = emptySet(),
     val favoritePlaceIds: Set<String> = emptySet(),
     val seeded: Boolean = false,
+    /** 마이페이지 설정: 적립 완료 음성 안내 */
+    val ttsOn: Boolean = true,
 ) {
     val totalPoints: Int get() = txs.sumOf { it.amount }
 }

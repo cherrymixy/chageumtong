@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -37,10 +39,12 @@ import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
 import com.pure.chageumtong.ui.screens.history.HistoryScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
 import com.pure.chageumtong.ui.screens.map.MapScreen
+import com.pure.chageumtong.ui.screens.my.MyScreen
+import com.pure.chageumtong.ui.screens.my.MyTabIcon
 import com.pure.chageumtong.ui.screens.shop.ShopScreen
 import com.pure.chageumtong.ui.theme.fig
 
-private val TABS = listOf("home" to "홈", "map" to "지도", "shop" to "상점")
+private val TABS = listOf("home" to "홈", "map" to "지도", "shop" to "상점", "my" to "마이")
 private val TAB_ICONS = mapOf("home" to R.drawable.ic_tab_home, "map" to R.drawable.ic_tab_map, "shop" to R.drawable.ic_tab_shop)
 
 private fun NavController.navigateTab(route: String) = navigate(route) {
@@ -80,15 +84,16 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
             }
             composable("map") { MapScreen(vm) }
             composable("shop") { ShopScreen(vm) }
+            composable("my") { MyScreen(vm, onHistory = { nav.navigate("history") }) }
             composable("history") {
                 HistoryScreen(vm, onOpenSession = { id -> nav.navigate("analysis/$id?readonly=true") }, onBack = { nav.popBackStack() })
             }
         }
-        // 좌하단 플로팅 탭바 (Figma 95:2211): 342×85, 아이콘 40, 선택 = 진한 색
+        // 좌하단 플로팅 탭바 (Figma 95:2211): 342×85, 아이콘 40, 선택 = 진한 색. 마이 탭 추가로 폭 342 → 446 (Figma 없음)
         if (route in TABS.map { it.first }) {
             Row(
                 Modifier.padding(start = D.ScreenPad, top = D.BottomGap, bottom = fig(26))
-                    .size(fig(342), D.BottomBarHeight)
+                    .size(fig(446), D.BottomBarHeight)
                     .clip(RoundedCornerShape(D.RadiusCard)).background(Surface)
                     .padding(horizontal = fig(30)),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -99,10 +104,13 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                         Modifier.size(MIN_TOUCH).clickable { nav.navigateTab(r) },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Image(
-                            painterResource(TAB_ICONS.getValue(r)), label, Modifier.size(fig(40)),
-                            colorFilter = ColorFilter.tint(if (r == route) TextStat else StrokeGray),
-                        )
+                        val tint = if (r == route) TextStat else StrokeGray
+                        val icon = TAB_ICONS[r]
+                        if (icon != null) {
+                            Image(painterResource(icon), label, Modifier.size(fig(40)), colorFilter = ColorFilter.tint(tint))
+                        } else {
+                            MyTabIcon(tint, Modifier.size(fig(40)).semantics { contentDescription = label })
+                        }
                     }
                 }
             }
