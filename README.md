@@ -1,0 +1,84 @@
+# 차금통 — 안전하게 달린 거리만큼 쌓이는 차 안의 저금통
+
+팀 **pure** · Pleos Connect 차량용 앱 개발 공모전 출품작
+
+주행이 끝나면 이번 주행을 분석해 **안전하게 달린 거리 1km당 1포인트**를 적립하고, 그 포인트로 차량 디지털 상품을 사거나 근처 사용처를 찾는 차량용 앱입니다. 당근(포인트)을 먹으며 달리는 유니콘이 주행을 함께합니다.
+
+## 핵심 기능
+
+- **실시간 주행 적립**: 기어 D로 출발하면 이동 거리와 적립 예정 포인트가 실시간으로 올라가고, 진행 레일에 미적립 구간이 표시됩니다.
+- **주행 분석**: 정차(P) 후 [주행 분석하고 적립하기]를 누르면 안전운전 비율, 이동·안전운전 거리, 위반 구간(과속·급커브 미감속·안전거리 미확보)과 그 이유를 지도 위에 보여줍니다.
+- **포인트 사용**: 상점에서 차량 기능 구독·테마·용품을 포인트로 구매하고, 지도에서 충전소·대리점·블루핸즈 사용처를 찾습니다.
+- **주행 중 제한**: 주행 중에는 적립·구매·검색 입력을 막고 광고 자동 넘김을 멈춥니다. 정차 후에만 조작할 수 있습니다.
+
+## 화면
+
+| 홈 | 주행 중 |
+|---|---|
+| ![홈](docs/screenshots/01_home.png) | ![주행 중](docs/screenshots/02_driving.png) |
+| **주행 분석** | **미적립 구간 선택** |
+| ![분석](docs/screenshots/03_analysis.png) | ![분석 칩](docs/screenshots/04_analysis_chip.png) |
+| **상점** | **지도** |
+| ![상점](docs/screenshots/05_shop.png) | ![지도](docs/screenshots/06_map.png) |
+| **적립 내역** | |
+| ![적립 내역](docs/screenshots/07_history.png) | |
+
+## 실행 방법
+
+1. APK 설치
+   ```
+   adb install -r apk/pure_차금통_release.apk
+   ```
+   > 설치 직후 기어 D에서 "주행 중에는 사용할 수 없습니다"가 뜨면 위 명령을 한 번 더 실행하세요 (에뮬레이터가 첫 설치 때 `distractionOptimized` 설정을 늦게 반영하는 경우가 있음).
+2. 앱 목록에서 **차금통** 실행. 처음 실행 시 차속 권한(위치 정보로 표시됨)을 허용합니다.
+3. 홈 오른쪽 위 **▶ 데모 주행** 탭 → 약 90초 동안 25km 데모 경로를 주행합니다.
+4. 주행이 끝나면 **[주행 분석하고 적립하기]** → 분석 화면에서 미적립 칩을 눌러 이유 확인 → **[확인하기]** → 총 포인트가 늘어난 것을 확인합니다.
+
+> 데모 데이터 초기화: 홈의 "총 적립 포인트" 제목을 길게 누르면 시드 데이터(14,560P)로 돌아갑니다.
+
+### 실차 신호로 테스트 (Virtual Console)
+
+에뮬레이터가 user 빌드라 `adb root`·`inject-vhal-event`를 쓸 수 없어서, 에뮬레이터 Virtual Console HTTP API로 기어·속도를 바꿉니다. 이 경로는 데모와 달리 **Pleos Vehicle SDK·Car API가 실제로 받은 값**으로 적립합니다.
+
+```
+scripts/drive_demo.sh [속도km/h=60] [주행초=40]
+# 예) scripts/drive_demo.sh 60 40   → P→D→60km/h 40초→정차→P, 약 0.67km 적립 가능
+```
+
+## 테스트 환경
+
+| 항목 | 값 |
+|---|---|
+| 에뮬레이터 | **Pleos Connect Emulator v2.1.0** (Android Automotive) |
+| Android | API 34 |
+| 화면 | **2560×1440 / 160dpi, 가로 고정** (앱 영역 1682×1210dp) |
+| 빌드 | Kotlin 2.2 · Jetpack Compose(Material3) · AGP 9.5 · minSdk 28 · targetSdk 37 |
+| 저장 | DataStore + kotlinx.serialization (앱 내부 저장, 서버 없음) |
+
+## 사용한 Pleos SDK
+
+| SDK | 버전 | 용도 |
+|---|---|---|
+| Vehicle SDK | 2.3.2 | **기어** 상태(P/R/N/D) 실시간 수신 → 주행 시작·종료 판정 |
+| Android Car API (`CarPropertyManager`) | 플랫폼 | **차속** `PERF_VEHICLE_SPEED` 수신 (Vehicle SDK 2.3.2에 차속 API가 없어 AAOS 표준 API 사용) |
+| NaviHelper SDK | 3.0.5 | 사용처 **길안내** — 의존성·권한 적용 완료, 화면 연동은 Phase 2 |
+
+화면과 점수 엔진은 데이터가 실차에서 왔는지 데모에서 왔는지 모릅니다. 분기는 `VehicleDataSource` 구현체(`PleosVehicleDataSource` / `DemoVehicleDataSource`)에서만 합니다.
+
+## 한계와 계획
+
+- **급커브·안전거리 판정은 데모 경로 기반**입니다. 실차에서 핸들 각도·ADAS(차간거리) 신호를 받을 수 없어, 커브 구간과 안전거리 이벤트는 데모 경로 데이터로 판정합니다. 향후 해당 API가 열리면 `VehicleDataSource`에 입력만 추가해 연동합니다.
+- **제한속도**: 실주행 시 기본 60km/h로 판정합니다. Phase 2에서 NaviHelper의 현재 도로 제한속도(`onCurrentRoadSpeedLimit`)로 교체합니다.
+- **길안내**: 지도 화면의 [길안내 시작]은 Phase 2에서 NaviHelper `requestRoute`로 연결합니다.
+- **분석 지도**: 실주행도 데모 경로 그림 위에 표시합니다.
+- Phase 2 계획: 지도·상점·내역 화면 디자인 적용, 적립 완료 TTS 안내, 주행 제한 QA.
+
+## APK 위치
+
+`apk/pure_차금통_release.apk`
+
+## 이미지·폰트 출처
+
+- 유니콘·도시·당근 일러스트, 아이콘, 분석 화면 지도 배경: 팀 pure 자체 제작
+- 광고 배너 차량 사진: **시연용, 저작권 현대자동차**
+- 폰트: [Pretendard](https://github.com/orioncactus/pretendard) — SIL Open Font License 1.1 (`docs/PRETENDARD_LICENSE.txt`)

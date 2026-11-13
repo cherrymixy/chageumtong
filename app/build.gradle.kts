@@ -20,11 +20,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // 서명 키·비밀번호는 레포 밖(~/keys, ~/.gradle/gradle.properties)에 둔다. 없으면 release는 미서명으로 빌드됨
+    val storeFilePath = providers.gradleProperty("CHAGEUMTONG_STORE_FILE").orNull
+    signingConfigs {
+        if (storeFilePath != null) create("release") {
+            val pw = providers.gradleProperty("CHAGEUMTONG_STORE_PASSWORD").get()
+            storeFile = file(storeFilePath)
+            storePassword = pw
+            keyAlias = "chageumtong"
+            keyPassword = pw
+        }
+    }
+
     buildTypes {
         release {
+            signingConfigs.findByName("release")?.let { signingConfig = it }
+            // R8을 켜면 kotlin 클래스 이름이 바뀌어 Pleos 기어 수신에서 IllegalAccessError로 죽음 (step 7 확인) → 끔
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }
