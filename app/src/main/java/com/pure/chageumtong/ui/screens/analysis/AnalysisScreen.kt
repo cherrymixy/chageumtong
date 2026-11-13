@@ -1,5 +1,8 @@
 package com.pure.chageumtong.ui.screens.analysis
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,12 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import com.pure.chageumtong.R
 import com.pure.chageumtong.domain.DriveSession
 import com.pure.chageumtong.domain.praise
 import com.pure.chageumtong.ui.AppViewModel
 import com.pure.chageumtong.ui.components.FigButton
+import com.pure.chageumtong.ui.components.countUp
 import com.pure.chageumtong.ui.components.RouteMap
 import com.pure.chageumtong.ui.components.SemiGauge
 import com.pure.chageumtong.ui.components.fmtKm
@@ -58,6 +63,7 @@ import com.pure.chageumtong.ui.theme.TextTitle
 import com.pure.chageumtong.ui.theme.Track
 import com.pure.chageumtong.ui.theme.fig
 import java.time.Instant
+import kotlinx.coroutines.delay
 
 /** 주행 분석 결과 (Figma 95:2638 / 95:2689). readonly = 적립 내역에서 연 지난 주행. */
 @Composable
@@ -99,9 +105,19 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
     Box(Modifier.width(fig(667)).fillMaxHeight().background(Color.White)) {
         // 헤더 (높이 222, 당근 일러스트는 아래가 잘림)
         Box(Modifier.fillMaxWidth().height(fig(222)).background(Primary).clip(RoundedCornerShape(0))) {
-            Image(painterResource(R.drawable.carrot_header), null, Modifier.offset(fig(334), fig(69)).size(fig(367)))
+            // 적립 순간: 당근이 통 튀어 들어오고 +NP가 0부터 올라감. 지난 기록 열람은 정지 상태 (STEP 11)
+            val pop = remember { Animatable(if (readonly) 1f else 0f) }
+            LaunchedEffect(Unit) {
+                if (readonly) return@LaunchedEffect
+                delay(300) // 화면 전환 페이드가 끝난 뒤에 튀어야 보임
+                pop.animateTo(1f, spring(dampingRatio = 0.4f, stiffness = Spring.StiffnessVeryLow))
+            }
+            Image(
+                painterResource(R.drawable.carrot_header), null,
+                Modifier.offset(fig(334), fig(69)).size(fig(367)).graphicsLayer { scaleX = pop.value; scaleY = pop.value },
+            )
             Row(Modifier.offset(fig(36), fig(24)), verticalAlignment = Alignment.Bottom) {
-                Text("+${s.points}", style = T.Hero, color = Color.White)
+                Text("+${countUp(s.points, start = if (readonly) s.points else 0, ms = 1200)}", style = T.Hero, color = Color.White)
                 Text("P", style = T.Hero, color = Color.White)
                 Spacer(Modifier.width(fig(28)))
                 val sub = if (readonly) {

@@ -52,6 +52,7 @@ import com.pure.chageumtong.domain.DriveState
 import com.pure.chageumtong.domain.praise
 import com.pure.chageumtong.ui.AppViewModel
 import com.pure.chageumtong.ui.components.FigButton
+import com.pure.chageumtong.ui.components.countUp
 import com.pure.chageumtong.ui.components.ProgressRail
 import com.pure.chageumtong.ui.components.SemiGauge
 import com.pure.chageumtong.ui.components.WeekBars
@@ -206,11 +207,11 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
             style = T.Label, color = OnPrimary,
         )
         Row(Modifier.offset(fig(35), fig(69)), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(fig(6.3))) {
-            Text(fmtP(data.totalPoints), style = T.TotalNumber, color = OnPrimary)
+            Text(fmtP(countUp(data.totalPoints)), style = T.TotalNumber, color = OnPrimary)
             Text("P", style = T.TotalNumber, color = OnPrimary.copy(alpha = 0.5f))
         }
         Row(Modifier.offset(fig(35), fig(162)), horizontalArrangement = Arrangement.spacedBy(fig(6))) {
-            Text("이번 달", style = T.Month, color = OnPrimary.copy(alpha = 0.7f))
+            Text("최근 30일", style = T.Month, color = OnPrimary.copy(alpha = 0.7f))
             Text("+${fmtP(month?.earned ?: 0)}P", style = T.MonthBold, color = OnPrimary.copy(alpha = 0.9f))
             Text("적립", style = T.Month, color = OnPrimary.copy(alpha = 0.7f))
         }
@@ -228,6 +229,9 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
     }
 }
 
+/** 30일 누적은 네 자리 km가 돼서 카드 폭을 넘음 → 100km 이상은 소수점 없이 "1,429" */
+private fun cardKm(km: Double) = if (km >= 100) "%,d".format(kotlin.math.round(km).toInt()) else fmtKm(km)
+
 @Composable
 private fun CardTitle(title: String, value: String, valueColor: Color) {
     Text(title, style = T.Label, color = TextTitle)
@@ -238,14 +242,14 @@ private fun CardTitle(title: String, value: String, valueColor: Color) {
     }
 }
 
-/** 이번 달 안전운전 거리 + 반원 게이지 (95:2191) */
+/** 최근 30일 안전운전 거리 + 반원 게이지 (95:2191) */
 @Composable
 private fun SafeCard(vm: AppViewModel, modifier: Modifier) {
     val month by vm.month.collectAsState()
     val ratio = month?.safeRatio ?: 0
     Box(modifier.height(fig(365)).card(Surface)) {
         Column(Modifier.padding(start = fig(32), top = fig(35))) {
-            CardTitle("이번 달 안전운전 거리", fmtKm(month?.safeKm ?: 0.0), Primary)
+            CardTitle("최근 30일 안전운전 거리", cardKm(month?.safeKm ?: 0.0), Primary)
         }
         Column(Modifier.fillMaxWidth().padding(top = fig(178)), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(contentAlignment = Alignment.BottomCenter) {
@@ -262,14 +266,14 @@ private fun SafeCard(vm: AppViewModel, modifier: Modifier) {
     }
 }
 
-/** 이번 달 주행거리 + 요일 막대 (95:2144) */
+/** 최근 30일 주행거리 + 이번 주 요일 막대 (95:2144) */
 @Composable
 private fun DistanceCard(vm: AppViewModel, modifier: Modifier) {
     val month by vm.month.collectAsState()
     val week by vm.week.collectAsState()
     val today = LocalDate.now(vm.zone).dayOfWeek.value - 1
     Column(modifier.height(fig(365)).card(Surface).padding(start = fig(35), top = fig(35), end = fig(31), bottom = fig(25))) {
-        CardTitle("이번 달 주행거리", fmtKm(month?.distanceKm ?: 0.0), TextNumber)
+        CardTitle("최근 30일 주행거리", cardKm(month?.distanceKm ?: 0.0), TextNumber)
         Spacer(Modifier.weight(1f))
         WeekBars(week, today, Modifier.fillMaxWidth())
     }

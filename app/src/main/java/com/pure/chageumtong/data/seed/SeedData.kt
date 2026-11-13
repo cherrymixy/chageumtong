@@ -13,7 +13,7 @@ import kotlin.math.roundToLong
 import kotlin.random.Random
 
 /**
- * 첫 실행 시드: 지난 4주 주행(주 4~6회, 5~30km, 안전비율 85~100%) + 사용 내역 3건.
+ * 첫 실행 시드: 지난 4주 출퇴근 주행(평일 2회·주말 0~1회, 20~45km, 안전비율 90~100%) + 사용 내역 3건.
  * 마지막에 "이전 적립 포인트" 보정 거래로 총합을 정확히 14,560P로 맞춘다 (PRD §8).
  */
 object SeedData {
@@ -30,13 +30,14 @@ object SeedData {
         val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
 
         val sessions = mutableListOf<DriveSession>()
-        for (week in 0 until 4) {
-            // 이 주에 해당하는 7일(1~28일 전) 중 4~6일
-            val days = (1..7).map { week * 7 + it }.shuffled(rnd).take(rnd.nextInt(4, 7)).sorted()
-            for (daysAgo in days) {
-                val start = today.minusDays(daysAgo.toLong())
-                    .atTime(rnd.nextInt(7, 21), rnd.nextInt(0, 60)).atZone(zone).toInstant().toEpochMilli()
-                sessions += session("seed-$daysAgo", start, rnd)
+        // 출퇴근 차량: 평일(1~28일 전)은 출근·퇴근 2회, 주말은 절반 확률로 나들이 1회
+        for (daysAgo in 1..28) {
+            val day = today.minusDays(daysAgo.toLong())
+            val hours = if (day.dayOfWeek.value <= 5) listOf(rnd.nextInt(7, 9), rnd.nextInt(18, 20))
+            else if (rnd.nextBoolean()) listOf(rnd.nextInt(10, 16)) else emptyList()
+            hours.forEachIndexed { i, h ->
+                val start = day.atTime(h, rnd.nextInt(0, 60)).atZone(zone).toInstant().toEpochMilli()
+                sessions += session("seed-$daysAgo-$i", start, rnd)
             }
         }
         val claimTxs = sessions.filter { it.points > 0 }.map {
@@ -49,7 +50,7 @@ object SeedData {
         }
 
         val sum = (claimTxs + usageTxs).sumOf { it.amount }
-        // 보정 거래는 4주보다 이전 시각으로 → "이번 달 적립" 통계에 안 섞인다
+        // 보정 거래는 30일보다 이전 시각으로 → "최근 30일 적립" 통계에 안 섞인다
         val adjust = PointTx("tx-seed-carryover", now - 60 * DAY_MS, TOTAL_POINTS - sum, null, null, "이전 적립 포인트")
 
         return AppData(
@@ -61,10 +62,9 @@ object SeedData {
     }
 
     private fun session(id: String, start: Long, rnd: Random): DriveSession {
-        val distance = floor((5 + rnd.nextDouble() * 25) * 10) / 10 // 5.0~30.0km
-        // 위반 1건 = 0.5km. 최대 15%까지 → 안전비율 85% 이상
-        val maxViolations = floor(distance * 0.15 / 0.5).toInt()
-        val count = rnd.nextInt(0, maxViolations + 1)
+        val distance = floor((20 + rnd.nextDouble() * 25) * 10) / 10 // 20.0~45.0km (출퇴근)
+        // 위반 1건 = 0.5km. 0~4건 → 안전비율 90% 이상
+        val count = rnd.nextInt(0, 5)
         val gap = distance / (count + 1) // 등간격 배치 → 구간이 겹치지 않음
         val violations = (1..count).map { i ->
             val type = ViolationType.entries[rnd.nextInt(ViolationType.entries.size)]

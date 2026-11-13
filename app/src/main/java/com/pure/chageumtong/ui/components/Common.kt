@@ -1,6 +1,16 @@
 package com.pure.chageumtong.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import com.pure.chageumtong.ui.theme.TextLocation
 import com.pure.chageumtong.ui.theme.TextBody
 import com.pure.chageumtong.ui.theme.BubbleStroke
@@ -83,6 +93,16 @@ import kotlin.math.roundToInt
 fun fmtKm(km: Double) = "%.1f".format(km)
 fun fmtP(p: Int) = "%,d".format(p)
 
+/** 숫자 카운트업: 처음엔 start, target이 바뀔 때마다 지금 보이는 값에서 target까지 올라감. 화면 이동 후에도 마지막 값 기억 */
+@Composable
+fun countUp(target: Int, start: Int = target, ms: Int = 900): Int {
+    var shown by rememberSaveable { mutableIntStateOf(start) }
+    LaunchedEffect(target) {
+        animate(shown.toFloat(), target.toFloat(), animationSpec = tween(ms, easing = FastOutSlowInEasing)) { v, _ -> shown = v.roundToInt() }
+    }
+    return shown
+}
+
 /** 일러스트·이미지 자리 (PNG가 들어오면 STEP 6에서 교체) */
 @Composable
 fun GrayBox(label: String, modifier: Modifier = Modifier) {
@@ -162,7 +182,9 @@ fun SemiGauge(ratio: Int, modifier: Modifier = Modifier, stroke: Dp = fig(28)) {
  * 0~25km, 초과 시 5km 단위 확장 (PRD §6.1).
  */
 @Composable
-fun ProgressRail(distanceKm: Double, violations: List<Violation>, modifier: Modifier = Modifier) {
+fun ProgressRail(targetKm: Double, violations: List<Violation>, modifier: Modifier = Modifier) {
+    // 샘플이 띄엄띄엄 와도 레일이 부드럽게 차오르도록 (STEP 11)
+    val distanceKm = animateFloatAsState(targetKm.toFloat(), tween(800, easing = LinearEasing), label = "rail").value.toDouble()
     val maxKm = max(25.0, ceil(distanceKm / 5) * 5)
     val ticks = (maxKm / 5).toInt()
     val badge = fig(41)

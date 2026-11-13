@@ -67,29 +67,31 @@ class RepoLogicTest {
         assertEquals(PurchaseResult.AlreadyOwned, next.purchase(product, now).second)
     }
 
-    @Test fun `이번 달과 이번 주 통계`() {
+    @Test fun `최근 30일과 이번 주 통계`() {
         val d = AppData()
-            .claim(session("oct", 10.0, ms(2026, 10, 31)), now)!! // 지난달
+            .claim(session("old", 10.0, ms(2026, 10, 14)), now)!! // 30일 밖 (10/15부터 포함)
+            .claim(session("edge", 2.0, ms(2026, 10, 15, 0)), now)!! // 30일 창 첫날
             .claim(session("mon", 5.0, ms(2026, 11, 9)), now)!! // 이번 주 월
             .claim(session("fri", 12.0, ms(2026, 11, 13), listOf(Violation.at(ViolationType.SAFE_DISTANCE, 6.0, ""))), now)!!
         val m = d.monthStats(now, zone)
-        assertEquals(17.0, m.distanceKm, 1e-9)
-        assertEquals(16.5, m.safeKm, 1e-9)
+        assertEquals(19.0, m.distanceKm, 1e-9)
+        assertEquals(18.5, m.safeKm, 1e-9)
         assertEquals(97, m.safeRatio)
-        assertEquals(10 + 5 + 11, m.earned) // 적립 거래 시각(now)이 모두 이번 달
+        assertEquals(10 + 2 + 5 + 11, m.earned) // 적립 거래 시각(now)이 모두 30일 안
         assertEquals(listOf(5.0, 0.0, 0.0, 0.0, 12.0, 0.0, 0.0), d.weekDailyKm(now, zone))
     }
 
-    @Test fun `시드 총합 14560P, 4주 주 4~6회, 안전비율 85 이상`() {
+    @Test fun `시드 총합 14560P, 4주 출퇴근, 안전비율 90 이상`() {
         val seed = SeedData.create(now, zone, products)
         assertEquals(14_560, seed.totalPoints)
         assertTrue(seed.seeded)
         assertEquals(setOf("bl-vgs", "bl-lighting", "bl-theme-unicorn"), seed.ownedProductIds)
         assertEquals(3, seed.txs.count { it.amount < 0 })
-        assertTrue(seed.sessions.size in 16..24)
-        assertTrue(seed.sessions.all { it.safeRatio in 85..100 && it.distanceKm in 5.0..30.0 })
-        // 보정 거래가 이번 달 적립에 섞이지 않음
-        assertEquals(seed.txs.filter { it.sessionId != null && it.at >= ms(2026, 11, 1, 0) }.sumOf { it.amount }, seed.monthStats(now, zone).earned)
+        assertTrue(seed.sessions.size in 40..48) // 평일 20일 × 2 + 주말 8일 × 0~1
+        assertEquals(seed.sessions.size, seed.sessions.map { it.id }.toSet().size)
+        assertTrue(seed.sessions.all { it.safeRatio in 90..100 && it.distanceKm in 20.0..45.0 })
+        // 시드 주행 적립은 모두 최근 30일, 보정 거래는 섞이지 않음
+        assertEquals(seed.txs.filter { it.sessionId != null }.sumOf { it.amount }, seed.monthStats(now, zone).earned)
         // 같은 입력이면 같은 시드
         assertEquals(seed, SeedData.create(now, zone, products))
     }

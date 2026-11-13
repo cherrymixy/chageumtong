@@ -57,10 +57,13 @@ data class MonthStats(val earned: Int, val distanceKm: Double, val safeKm: Doubl
 
 private fun Long.toDate(zone: ZoneId): LocalDate = Instant.ofEpochMilli(this).atZone(zone).toLocalDate()
 
-/** 이번 달: 적립 포인트(+거래만), 주행거리, 안전운전 거리, 안전운전 비율 */
+/**
+ * 최근 30일(오늘 포함): 적립 포인트(+거래만), 주행거리, 안전운전 거리, 안전운전 비율.
+ * 달력 월이면 월초(예: PT 12/3)에 거의 비어 보여서 30일 창으로 (STEP 11, 승아 결정)
+ */
 fun AppData.monthStats(now: Long, zone: ZoneId): MonthStats {
-    val month = now.toDate(zone).withDayOfMonth(1)
-    fun inMonth(t: Long) = t.toDate(zone).withDayOfMonth(1) == month
+    val from = now.toDate(zone).minusDays(29)
+    fun inMonth(t: Long) = !t.toDate(zone).isBefore(from)
     val monthSessions = sessions.filter { inMonth(it.startedAt) }
     val distance = monthSessions.sumOf { it.distanceKm }
     val safe = monthSessions.sumOf { it.safeKm }
