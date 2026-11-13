@@ -74,6 +74,7 @@ import com.pure.chageumtong.ui.AppViewModel
 import com.pure.chageumtong.ui.components.AssetImage
 import com.pure.chageumtong.ui.theme.Alert
 import com.pure.chageumtong.ui.theme.Bg
+import com.pure.chageumtong.ui.theme.ChargerPurple
 import com.pure.chageumtong.ui.theme.D
 import com.pure.chageumtong.ui.theme.DealerRed
 import com.pure.chageumtong.ui.theme.GasGreen
@@ -97,7 +98,7 @@ private val PlaceCategory.label get() = when (this) {
 
 /** Figma 95:2827/2829/2831 칩 글자색 */
 private val PlaceCategory.color get() = when (this) {
-    PlaceCategory.CHARGER -> Primary
+    PlaceCategory.CHARGER -> ChargerPurple
     PlaceCategory.DEALER -> DealerRed
     PlaceCategory.BLUEHANDS -> Alert
     PlaceCategory.GAS -> GasGreen
