@@ -55,6 +55,8 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 # 예) scripts/drive_demo.sh 60 40   → P→D→60km/h 40초→정차→P, 약 0.67km 적립 가능
 ```
 
+팝업 3종과 주행 위젯은 `scripts/popup_demo.sh`로 단계별로 볼 수 있습니다 (Enter로 다음 단계, 안내 문구대로 버튼을 누르면 됨).
+
 ## 테스트 환경
 
 | 항목 | 값 |
