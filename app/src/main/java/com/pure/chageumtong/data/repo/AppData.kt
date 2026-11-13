@@ -55,6 +55,10 @@ fun AppData.purchase(product: Product, now: Long): Pair<AppData, PurchaseResult>
     ) to PurchaseResult.Success
 }
 
+/** N모드 정차 중 광고 시청 보너스 (Figma 팝업 105:2307). 주행과 무관한 거래로 남는다 */
+fun AppData.adBonus(points: Int, now: Long): AppData =
+    copy(txs = txs + PointTx("tx-ad-$now", now, points, null, null, "광고 시청 적립"))
+
 data class MonthStats(val earned: Int, val distanceKm: Double, val safeKm: Double, val safeRatio: Int)
 
 private fun Long.toDate(zone: ZoneId): LocalDate = Instant.ofEpochMilli(this).atZone(zone).toLocalDate()

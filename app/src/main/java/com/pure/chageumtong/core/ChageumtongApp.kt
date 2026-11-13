@@ -12,5 +12,6 @@ class ChageumtongApp : Application() {
         super.onCreate()
         if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank()) KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
         container = AppContainer(this)
+        DriveWidgetOverlay(this, container, container.scope)
     }
 }

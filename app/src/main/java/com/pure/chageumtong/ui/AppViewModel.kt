@@ -29,6 +29,8 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     /** 카카오맵이 있으면 미리 받은 실제 사용처, 없으면(정적 지도 그림) 그림 좌표가 있는 시드 장소 */
     val places: List<Place> = if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank()) c.catalog.kakaoPlaces else c.catalog.places
     val demoRoute = c.demoRoute
+    /** 마지막 차량 입력 (팝업이 기어·속도를 본다) */
+    val input = c.lastInput
 
     val data: StateFlow<AppData> = c.points.data.stateIn(viewModelScope, SharingStarted.Eagerly, AppData())
     val month: StateFlow<MonthStats?> = c.points.monthStats.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -57,6 +59,10 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     /** 분석 화면 진입(새 적립) 시 1회 음성 안내 */
     fun announcePoints(points: Int) {
         if (data.value.ttsOn) c.tts.announcePoints(points)
+    }
+
+    fun addAdBonus(points: Int) {
+        viewModelScope.launch { c.points.addAdBonus(points) }
     }
 
     fun setTts(on: Boolean) {

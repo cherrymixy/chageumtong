@@ -43,6 +43,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        container.appVisible.value = true
+    }
+
+    override fun onStop() {
+        container.appVisible.value = false
+        super.onStop()
+    }
+
     override fun onDestroy() {
         if (isFinishing) {
             container.pleos.stop()

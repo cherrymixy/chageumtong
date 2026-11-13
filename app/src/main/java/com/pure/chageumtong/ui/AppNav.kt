@@ -35,6 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pure.chageumtong.core.AppContainer
+import com.pure.chageumtong.ui.components.DrivePopupHost
 import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
 import com.pure.chageumtong.ui.screens.history.HistoryScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
@@ -60,60 +61,63 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
 
-    Column(modifier.fillMaxSize()) {
-        NavHost(nav, startDestination = "home", modifier = Modifier.weight(1f)) {
-            composable("home") {
-                HomeScreen(
-                    vm,
-                    onClaimed = { id -> nav.navigate("analysis/$id") },
-                    onShop = { nav.navigateTab("shop") },
-                    onHistory = { nav.navigate("history") },
-                )
-            }
-            composable(
-                "analysis/{id}?readonly={readonly}",
-                arguments = listOf(
-                    navArgument("id") { type = NavType.StringType },
-                    navArgument("readonly") { type = NavType.BoolType; defaultValue = false },
-                ),
-            ) { e ->
-                val readonly = e.arguments?.getBoolean("readonly") ?: false
-                AnalysisScreen(vm, e.arguments?.getString("id").orEmpty(), readonly) {
-                    if (readonly) nav.popBackStack() else nav.popBackStack("home", inclusive = false)
+    Box(modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            NavHost(nav, startDestination = "home", modifier = Modifier.weight(1f)) {
+                composable("home") {
+                    HomeScreen(
+                        vm,
+                        onClaimed = { id -> nav.navigate("analysis/$id") },
+                        onShop = { nav.navigateTab("shop") },
+                        onHistory = { nav.navigate("history") },
+                    )
+                }
+                composable(
+                    "analysis/{id}?readonly={readonly}",
+                    arguments = listOf(
+                        navArgument("id") { type = NavType.StringType },
+                        navArgument("readonly") { type = NavType.BoolType; defaultValue = false },
+                    ),
+                ) { e ->
+                    val readonly = e.arguments?.getBoolean("readonly") ?: false
+                    AnalysisScreen(vm, e.arguments?.getString("id").orEmpty(), readonly) {
+                        if (readonly) nav.popBackStack() else nav.popBackStack("home", inclusive = false)
+                    }
+                }
+                composable("map") { MapScreen(vm) }
+                composable("shop") { ShopScreen(vm) }
+                composable("my") { MyScreen(vm, onHistory = { nav.navigate("history") }) }
+                composable("history") {
+                    HistoryScreen(vm, onOpenSession = { id -> nav.navigate("analysis/$id?readonly=true") }, onBack = { nav.popBackStack() })
                 }
             }
-            composable("map") { MapScreen(vm) }
-            composable("shop") { ShopScreen(vm) }
-            composable("my") { MyScreen(vm, onHistory = { nav.navigate("history") }) }
-            composable("history") {
-                HistoryScreen(vm, onOpenSession = { id -> nav.navigate("analysis/$id?readonly=true") }, onBack = { nav.popBackStack() })
-            }
-        }
-        // 좌하단 플로팅 탭바 (Figma 95:2211): 342×85, 아이콘 40, 선택 = 진한 색. 마이 탭 추가로 폭 342 → 446 (Figma 없음)
-        if (route in TABS.map { it.first }) {
-            Row(
-                Modifier.padding(start = D.ScreenPad, top = D.BottomGap, bottom = fig(26))
-                    .size(fig(446), D.BottomBarHeight)
-                    .clip(RoundedCornerShape(D.RadiusCard)).background(Surface)
-                    .padding(horizontal = fig(30)),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TABS.forEach { (r, label) ->
-                    Box(
-                        Modifier.size(MIN_TOUCH).clickable { nav.navigateTab(r) },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        val tint = if (r == route) TextStat else StrokeGray
-                        val icon = TAB_ICONS[r]
-                        if (icon != null) {
-                            Image(painterResource(icon), label, Modifier.size(fig(40)), colorFilter = ColorFilter.tint(tint))
-                        } else {
-                            MyTabIcon(tint, Modifier.size(fig(40)).semantics { contentDescription = label })
+            // 좌하단 플로팅 탭바 (Figma 95:2211): 342×85, 아이콘 40, 선택 = 진한 색. 마이 탭 추가로 폭 342 → 446 (Figma 없음)
+            if (route in TABS.map { it.first }) {
+                Row(
+                    Modifier.padding(start = D.ScreenPad, top = D.BottomGap, bottom = fig(26))
+                        .size(fig(446), D.BottomBarHeight)
+                        .clip(RoundedCornerShape(D.RadiusCard)).background(Surface)
+                        .padding(horizontal = fig(30)),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TABS.forEach { (r, label) ->
+                        Box(
+                            Modifier.size(MIN_TOUCH).clickable { nav.navigateTab(r) },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            val tint = if (r == route) TextStat else StrokeGray
+                            val icon = TAB_ICONS[r]
+                            if (icon != null) {
+                                Image(painterResource(icon), label, Modifier.size(fig(40)), colorFilter = ColorFilter.tint(tint))
+                            } else {
+                                MyTabIcon(tint, Modifier.size(fig(40)).semantics { contentDescription = label })
+                            }
                         }
                     }
                 }
             }
         }
+        DrivePopupHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.TopCenter).padding(top = D.ScreenPad))
     }
 }

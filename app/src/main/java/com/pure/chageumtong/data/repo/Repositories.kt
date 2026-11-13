@@ -44,6 +44,10 @@ class PointRepository(
         store.update { seed().copy(ttsOn = it.ttsOn) }
     }
 
+    suspend fun addAdBonus(points: Int, now: Long = System.currentTimeMillis()) {
+        store.update { it.adBonus(points, now) }
+    }
+
     suspend fun setTts(on: Boolean) {
         store.update { it.copy(ttsOn = on) }
     }

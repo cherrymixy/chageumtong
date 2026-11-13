@@ -46,3 +46,8 @@ val Orange = Alert
 val BoxGray = Track
 val CardBg = Surface
 val TextSub = TextTertiary
+
+// 팝업·위젯 (Figma 97:2250)
+val PopupTitle = Color(0xFF191919)
+val PopupSub = Color(0xFF7C7C7C)
+val Handle = Color(0xFFD9D9D9)

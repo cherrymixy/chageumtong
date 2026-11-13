@@ -75,6 +75,13 @@ object T {
     val DialogBody = style(26, FontWeight.Medium) // Pleos Body Small
     val RowTitle = style(26, FontWeight.SemiBold)
     val RowAmount = style(32, FontWeight.Bold)
+
+    // 팝업·위젯 (Figma 97:2250). 프레임이 0.5배로 그려져 있어 px×2 (버튼 38→76 = MIN_TOUCH, 본문 14→28 ≥ Pleos 하한)
+    val PopupTitle = style(48, FontWeight.SemiBold, trackingPx = -0.96f)
+    val PopupSub = style(28, FontWeight.Medium, trackingPx = -0.56f)
+    val PopupButton = style(31.1, FontWeight.SemiBold, trackingPx = -0.62f)
+    val WidgetLabel = style(26, FontWeight.SemiBold, trackingPx = -0.52f)
+    val WidgetNumber = style(96.5, FontWeight.SemiBold, 1.1f)
 }
 
 val Typography = Typography(

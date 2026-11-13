@@ -2,6 +2,7 @@ package com.pure.chageumtong.data
 
 import com.pure.chageumtong.data.repo.AppData
 import com.pure.chageumtong.data.repo.PurchaseResult
+import com.pure.chageumtong.data.repo.adBonus
 import com.pure.chageumtong.data.repo.claim
 import com.pure.chageumtong.data.repo.monthStats
 import com.pure.chageumtong.data.repo.purchase
@@ -94,5 +95,11 @@ class RepoLogicTest {
         assertEquals(seed.txs.filter { it.sessionId != null }.sumOf { it.amount }, seed.monthStats(now, zone).earned)
         // 같은 입력이면 같은 시드
         assertEquals(seed, SeedData.create(now, zone, products))
+    }
+
+    @Test fun `광고 보너스는 세션 없는 적립 거래로 더해진다`() {
+        val d = AppData().adBonus(5, now)
+        assertEquals(5, d.totalPoints)
+        assertNull(d.txs.single().sessionId)
     }
 }

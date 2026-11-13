@@ -48,6 +48,9 @@ class AppContainer(context: Context) {
     }
     val places = PlaceRepository(store)
 
+    /** 앱 화면이 보이는지 (MainActivity onStart/onStop). 주행 위젯 오버레이가 본다 */
+    val appVisible = MutableStateFlow(false)
+
     private val _lastInput = MutableStateFlow<DriveInput?>(null)
     /** 엔진이 마지막으로 받은 입력 (디버그 표시용) */
     val lastInput: StateFlow<DriveInput?> = _lastInput.asStateFlow()

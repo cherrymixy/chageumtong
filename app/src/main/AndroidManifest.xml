@@ -14,6 +14,8 @@
 
     <!-- 카카오맵 타일 + 카카오 로컬 API(주유소 검색) -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 주행 중 다른 앱 위 포인트 위젯. Pleos 에뮬레이터엔 설정 화면이 없어 adb appops로 허용 (README) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-feature
         android:name="android.hardware.type.automotive"
