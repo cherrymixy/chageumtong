@@ -229,14 +229,14 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
         Spacer(Modifier.height(fig(32)))
         HorizontalDivider(Modifier.padding(horizontal = fig(36)), thickness = fig(1.5), color = Track)
         Spacer(Modifier.height(fig(25)))
-        Row(Modifier.padding(start = fig(30), end = fig(36)), verticalAlignment = Alignment.Top) {
+        // 오른쪽 여백을 왼쪽(버튼 앞 30)과 같게: 마지막 칸이 카드 끝에 붙지 않도록 칸을 양끝 정렬
+        Row(Modifier.padding(horizontal = fig(30)), verticalAlignment = Alignment.Top) {
             ClaimButton(vm, onClaimed, live.state, live.canClaim, driving)
             Spacer(Modifier.width(fig(47)))
-            // Figma 107:114: 칸 간격 214 (248 폭 - 34 겹침)
-            Row(Modifier.weight(1f)) {
-                Stat("안전운전 거리", fmtKm(safeKm(live.distanceKm, live.violations)), "km", Modifier.width(fig(214)))
-                Stat("이동거리", fmtKm(live.distanceKm), "km", Modifier.width(fig(214)))
-                Stat("주행시간", "${live.durationSec / 60}", "분", Modifier.wrapContentWidth(Alignment.Start, unbounded = true))
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
+                Stat("안전운전 거리", fmtKm(safeKm(live.distanceKm, live.violations)), "km")
+                Stat("이동거리", fmtKm(live.distanceKm), "km")
+                Stat("주행시간", "${live.durationSec / 60}", "분")
             }
         }
     }
