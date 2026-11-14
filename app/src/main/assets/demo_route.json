@@ -1,18 +1,18 @@
 {
-  "id": "demo-seoul-10km",
-  "totalKm": 10.0,
+  "id": "demo-seoul-5km",
+  "totalKm": 5.0,
   "segments": [
-    { "startKm": 0.0,   "endKm": 3.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "종로구 1-4" },
-    { "startKm": 3.0,   "endKm": 3.5,   "limitKmh": 60, "speedKmh": 55.0, "isCurve": true, "label": "종로구 21-22" },
-    { "startKm": 3.5,   "endKm": 4.95,  "limitKmh": 60, "speedKmh": 60.0, "label": "중구 2-3" },
-    { "startKm": 4.95,  "endKm": 5.05,  "limitKmh": 50, "speedKmh": 70.0, "label": "중구 5-1" },
-    { "startKm": 5.05,  "endKm": 6.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" },
-    { "startKm": 6.0,   "endKm": 6.3,   "limitKmh": 60, "speedKmh": 40.0, "rampKmhPerS": 10.0, "label": "용산구 3-4" },
-    { "startKm": 6.3,   "endKm": 10.0,  "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" }
+    { "startKm": 0.0,   "endKm": 1.5,   "limitKmh": 60, "speedKmh": 60.0, "label": "종로구 1-4" },
+    { "startKm": 1.5,   "endKm": 1.8,   "limitKmh": 60, "speedKmh": 55.0, "isCurve": true, "label": "종로구 21-22" },
+    { "startKm": 1.8,   "endKm": 2.4,   "limitKmh": 60, "speedKmh": 60.0, "label": "중구 2-3" },
+    { "startKm": 2.4,   "endKm": 2.5,   "limitKmh": 50, "speedKmh": 70.0, "label": "중구 5-1" },
+    { "startKm": 2.5,   "endKm": 3.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" },
+    { "startKm": 3.0,   "endKm": 3.3,   "limitKmh": 60, "speedKmh": 40.0, "rampKmhPerS": 10.0, "label": "용산구 3-4" },
+    { "startKm": 3.3,   "endKm": 5.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" }
   ],
   "stopKmhPerS": 12.0,
   "events": [
-    { "atKm": 7.0, "type": "SAFE_DISTANCE", "label": "용산구 3-4" }
+    { "atKm": 3.8, "type": "SAFE_DISTANCE", "label": "용산구 3-4" }
   ],
   "polyline": [
     [0.08, 0.82], [0.18, 0.74], [0.24, 0.60], [0.30, 0.48], [0.38, 0.44],

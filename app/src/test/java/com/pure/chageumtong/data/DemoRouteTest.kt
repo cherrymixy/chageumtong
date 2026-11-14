@@ -26,9 +26,9 @@ class DemoRouteTest {
         assertEquals(DriveState.ENDED, live.state)
         assertEquals(listOf("급커브 구간 미감속", "20km 과속", "급감속", "안전거리 미확보", "급정지"), live.violations.map { it.title })
         assertEquals(listOf(false, false, true, false, false), live.violations.map { it.waived })
-        assertEquals(10.04, live.distanceKm, 0.01)
+        assertEquals(5.05, live.distanceKm, 0.01)
         assertEquals(0.289, unsafeKm(live.violations, live.distanceKm), 0.001)
-        assertEquals(9, live.livePoints)
-        assertEquals(97, live.safeRatio)
+        assertEquals(4, live.livePoints)
+        assertEquals(94, live.safeRatio)
     }
 }

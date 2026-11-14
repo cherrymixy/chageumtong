@@ -85,9 +85,9 @@ class RepoLogicTest {
         assertEquals(listOf(5.0, 0.0, 0.0, 0.0, 12.0, 0.0, 0.0), d.weekDailyKm(now, zone))
     }
 
-    @Test fun `시드 총합 14560P, 4주 출퇴근, 안전비율 90 이상`() {
+    @Test fun `시드 총합 114560P, 4주 출퇴근, 안전비율 90 이상`() {
         val seed = SeedData.create(now, zone, products)
-        assertEquals(14_560, seed.totalPoints)
+        assertEquals(114_560, seed.totalPoints)
         assertTrue(seed.seeded)
         assertEquals(setOf("bl-vgs", "bl-lighting", "bl-theme-unicorn"), seed.ownedProductIds)
         assertEquals(3, seed.txs.count { it.amount < 0 })

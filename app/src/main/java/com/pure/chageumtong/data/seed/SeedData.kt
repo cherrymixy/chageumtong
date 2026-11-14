@@ -15,10 +15,10 @@ import kotlin.random.Random
 
 /**
  * 첫 실행 시드: 지난 4주 출퇴근 주행(평일 2회·주말 0~1회, 20~45km, 안전비율 90~100%) + 사용 내역 3건.
- * 마지막에 "이전 적립 포인트" 보정 거래로 총합을 정확히 14,560P로 맞춘다 (PRD §8).
+ * 마지막에 "이전 적립 포인트" 보정 거래로 총합을 정확히 114,560P로 맞춘다 (PRD §8, 시연에서 상점 상품을 살 수 있게 14,560 → 114,560).
  */
 object SeedData {
-    const val TOTAL_POINTS = 14_560
+    const val TOTAL_POINTS = 114_560
     private const val RANDOM_SEED = 20261115
     private const val DAY_MS = 24L * 60 * 60 * 1000
 

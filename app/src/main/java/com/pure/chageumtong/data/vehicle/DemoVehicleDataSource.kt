@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * 데모 주행: 10km 경로를 가상 시간 1초 = 실제 60ms로 압축 재생 (약 36초, PRD §12 D3).
+ * 데모 주행: 5km 경로를 가상 시간 1초 = 실제 60ms로 압축 재생 (약 20초, PRD §12 D3).
  * 샘플 시각은 가상 시간이라 엔진에는 약 10분 주행으로 기록된다.
  */
 class DemoVehicleDataSource(
@@ -56,7 +56,7 @@ class DemoVehicleDataSource(
     }
 
     companion object {
-        /** 실제 60ms = 가상 1초 → 600초(10분) 경로가 약 36초 */
+        /** 실제 60ms = 가상 1초 → 약 330초(5분 반) 경로가 약 20초 */
         const val TICK_MS = 60L
     }
 }
