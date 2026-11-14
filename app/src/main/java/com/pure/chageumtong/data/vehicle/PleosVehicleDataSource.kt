@@ -10,7 +10,10 @@ import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import com.pure.chageumtong.data.navi.RoadSpeedLimit
+import com.pure.chageumtong.domain.DEFAULT_LIMIT_KMH
 import com.pure.chageumtong.domain.Gear
+import com.pure.chageumtong.domain.RoadSegment
 import com.pure.chageumtong.domain.VehicleSample
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +24,7 @@ import kotlinx.coroutines.flow.flow
 
 /**
  * 실차 입력원. 기어 = Pleos Vehicle SDK, 속도 = AAOS CarPropertyManager PERF_VEHICLE_SPEED
- * (Vehicle SDK 2.3.2에 속도 API 없음, PRD §12).
+ * (Vehicle SDK 2.3.2에 속도 API 없음, PRD §12). 제한속도 = NaviHelper 현재 도로 제한속도, 없으면 60.
  */
 class PleosVehicleDataSource(private val context: Context) : VehicleDataSource {
 
@@ -36,6 +39,7 @@ class PleosVehicleDataSource(private val context: Context) : VehicleDataSource {
     private var vehicle: Vehicle? = null
     private var car: Car? = null
     private var carPropertyManager: CarPropertyManager? = null
+    private val speedLimit = RoadSpeedLimit(context)
 
     private val gearListener = object : GearSelectionListener {
         override fun onSelected(gear: VehicleGear?) { this@PleosVehicleDataSource.gear = gear.toGear() }
@@ -54,7 +58,8 @@ class PleosVehicleDataSource(private val context: Context) : VehicleDataSource {
     /** 속도가 일정하면 변경 이벤트가 안 올 수 있어, 최신값을 일정 주기로 샘플링해 거리 적분이 끊기지 않게 한다. */
     override val inputs: Flow<DriveInput> = flow {
         while (true) {
-            emit(DriveInput(VehicleSample(System.currentTimeMillis(), speedMps, gear)))
+            val segment = RoadSegment(limitKmh = speedLimit.current() ?: DEFAULT_LIMIT_KMH)
+            emit(DriveInput(VehicleSample(System.currentTimeMillis(), speedMps, gear), segment))
             delay(SAMPLE_MS)
         }
     }
@@ -63,6 +68,7 @@ class PleosVehicleDataSource(private val context: Context) : VehicleDataSource {
     override fun start() {
         if (vehicle == null) startGear()
         if (carPropertyManager == null) startSpeed()
+        speedLimit.start()
     }
 
     override fun stop() {
@@ -71,6 +77,7 @@ class PleosVehicleDataSource(private val context: Context) : VehicleDataSource {
             it.release()
         }
         vehicle = null
+        speedLimit.stop()
         carPropertyManager?.unregisterCallback(speedCallback)
         carPropertyManager = null
         car?.disconnect()

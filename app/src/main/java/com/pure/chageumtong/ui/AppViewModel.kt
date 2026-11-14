@@ -89,9 +89,6 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         if (data.value.ttsOn) c.tts.announcePoints(points)
     }
 
-    fun addAdBonus(points: Int) {
-        viewModelScope.launch { c.points.addAdBonus(points) }
-    }
 
     fun setTts(on: Boolean) {
         viewModelScope.launch { c.points.setTts(on) }

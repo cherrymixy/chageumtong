@@ -1,6 +1,7 @@
 package com.pure.chageumtong.data.seed
 
 import com.pure.chageumtong.data.repo.AppData
+import com.pure.chageumtong.domain.DEFAULT_LIMIT_KMH
 import com.pure.chageumtong.domain.DriveSession
 import com.pure.chageumtong.domain.PointTx
 import com.pure.chageumtong.domain.Product
@@ -63,17 +64,19 @@ object SeedData {
 
     private fun session(id: String, start: Long, rnd: Random): DriveSession {
         val distance = floor((20 + rnd.nextDouble() * 25) * 10) / 10 // 20.0~45.0km (출퇴근)
-        // 위반 1건 = 0.5km. 0~4건 → 안전비율 90% 이상
+        // 위반 1건 = 수십~수백 m. 0~4건 → 안전비율 90% 이상
         val count = rnd.nextInt(0, 5)
         val gap = distance / (count + 1) // 등간격 배치 → 구간이 겹치지 않음
         val violations = (1..count).map { i ->
             val type = ViolationType.entries[rnd.nextInt(ViolationType.entries.size)]
-            Violation.at(
-                type = type,
-                atKm = floor(gap * i * 100) / 100,
-                locationLabel = labels[rnd.nextInt(labels.size)],
-                overKmh = if (type == ViolationType.OVERSPEED) rnd.nextInt(12, 26) else null,
-            )
+            val atKm = floor(gap * i * 100) / 100
+            val label = labels[rnd.nextInt(labels.size)]
+            if (type == ViolationType.OVERSPEED) {
+                val over = rnd.nextInt(12, 26).toDouble()
+                Violation.overspeed(atKm, atKm + 0.2, over, DEFAULT_LIMIT_KMH + over, label)
+            } else {
+                Violation.momentary(type, atKm, DEFAULT_LIMIT_KMH.toDouble(), label)
+            }
         }
         val avgKmh = rnd.nextInt(30, 51)
         val durationSec = (distance / avgKmh * 3600).roundToLong()

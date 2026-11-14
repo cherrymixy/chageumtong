@@ -88,9 +88,9 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
                 val mapMod = Modifier.weight(1f).fillMaxHeight()
                 // 카카오 키·경로 좌표가 있으면 실제 지도, 없으면 그림 지도 (심사용 빌드 등)
                 if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank() && vm.demoRoute.path.isNotEmpty()) {
-                    KakaoRouteMap(vm.demoRoute.path, session.distanceKm, session.violations, selected, mapMod)
+                    KakaoRouteMap(vm.demoRoute.path, session.distanceKm, session.visibleViolations, selected, mapMod)
                 } else {
-                    RouteMap(vm.demoRoute.polyline, session.distanceKm, session.violations, selected, mapMod)
+                    RouteMap(vm.demoRoute.polyline, session.distanceKm, session.visibleViolations, selected, mapMod)
                 }
             }
         }
@@ -161,7 +161,7 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
         }
         HorizontalDivider(Modifier.offset(y = fig(782)), thickness = fig(1.5), color = Track)
 
-        if (s.violations.isEmpty()) {
+        if (s.visibleViolations.isEmpty()) {
             Text("모든 구간 적립 완료!", Modifier.offset(fig(30), fig(808)), style = T.SectionBold, color = Primary)
             Text("위반 없이 달려서 이동한 거리가 모두 포인트로 적립됐어요.", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
         } else {
@@ -172,7 +172,7 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
                 contentPadding = PaddingValues(horizontal = fig(30)),
                 horizontalArrangement = Arrangement.spacedBy(fig(28)),
             ) {
-                itemsIndexed(s.violations) { i, v ->
+                itemsIndexed(s.visibleViolations) { i, v ->
                     val on = i == selected
                     Box(
                         Modifier.height(fig(92)).clip(RoundedCornerShape(D.RadiusButton))

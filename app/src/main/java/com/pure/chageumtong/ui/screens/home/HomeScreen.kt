@@ -225,7 +225,7 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
             }
         }
         Spacer(Modifier.height(fig(32)))
-        ProgressRail(live.distanceKm, live.violations, Modifier.padding(horizontal = fig(36)).fillMaxWidth())
+        ProgressRail(live.distanceKm, live.visibleViolations, Modifier.padding(horizontal = fig(36)).fillMaxWidth())
         Spacer(Modifier.height(fig(32)))
         HorizontalDivider(Modifier.padding(horizontal = fig(36)), thickness = fig(1.5), color = Track)
         Spacer(Modifier.height(fig(25)))
@@ -357,9 +357,13 @@ private fun DistanceCard(vm: AppViewModel, modifier: Modifier) {
     }
 }
 
-private const val AD_COUNT = 5
+private val AD_BANNERS = listOf(
+    R.drawable.ad_banner_1, R.drawable.ad_banner_2, R.drawable.ad_banner_3,
+    R.drawable.ad_banner_4, R.drawable.ad_banner_5, R.drawable.ad_banner_6,
+)
+private val AD_COUNT = AD_BANNERS.size
 
-/** 광고 배너 캐러셀: 5초 자동 넘김, 주행 중 정지 (PRD §7) */
+/** 광고 배너 캐러셀: 6장 5초마다 자동 넘김(마지막 다음은 처음), 주행 중 정지 (PRD §7) */
 @Composable
 private fun AdCarousel(vm: AppViewModel, modifier: Modifier) {
     val driving by vm.isDriving.collectAsState()
@@ -371,9 +375,9 @@ private fun AdCarousel(vm: AppViewModel, modifier: Modifier) {
         }
     }
     Box(modifier.clip(RoundedCornerShape(D.RadiusCard))) {
-        // shortcut: 배너 이미지는 Figma의 1장(시연용, 저작권 현대자동차)뿐이라 5장 모두 같은 이미지, 추가 배너 받으면 교체
-        HorizontalPager(pager, Modifier.fillMaxSize()) {
-            Image(painterResource(R.drawable.ad_banner_1), "광고", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        // 배너 이미지: 현대자동차 차량 사진 6장 (시연용, 저작권 현대자동차)
+        HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+            Image(painterResource(AD_BANNERS[page]), "광고", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
         }
         Text(
             "Ad",

@@ -16,13 +16,16 @@ echo "P → D"
 speed 0; vc "gear?gear=Park"; sleep 2
 vc "gear?gear=Drive"; sleep 1
 
+# 초당 5km/h씩 바꿔 급출발(+11)·급감속(−7.5) 판정에 걸리지 않게 한다
 echo "가속 → ${SPEED}km/h"
-for s in 20 40 "$SPEED"; do speed "$s"; sleep 1; done
+for ((s = 5; s < SPEED; s += 5)); do speed "$s"; sleep 1; done
+speed "$SPEED"; sleep 1
 
 echo "${SECS}초 주행"
 for ((i = 0; i < SECS; i++)); do speed "$SPEED"; sleep 1; done
 
 echo "감속 → 정차 → P"
-for s in 40 20 0; do speed "$s"; sleep 1; done
+for ((s = SPEED - 5; s > 0; s -= 5)); do speed "$s"; sleep 1; done
+speed 0; sleep 1
 vc "gear?gear=Park"
 echo "완료: 앱 상태가 ENDED인지 확인하세요"

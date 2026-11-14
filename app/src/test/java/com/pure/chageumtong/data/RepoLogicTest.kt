@@ -33,10 +33,13 @@ class RepoLogicTest {
     private fun session(id: String, km: Double, at: Long = now, violations: List<Violation> = emptyList()) =
         DriveSession(id, at, at + 60_000, km, 60, violations, null, claimed = false)
 
+    /** 리포 로직 검증용 500m 구간 위반 */
+    private fun v500(atKm: Double) = Violation(ViolationType.SAFE_DISTANCE, atKm, atKm - 0.25, atKm + 0.25, "")
+
     private val product = Product("p1", ShopTab.SHOP, "테스트", "1,000원", 1000, "x")
 
     @Test fun `같은 세션은 한 번만 적립`() {
-        val s = session("a", 17.4, violations = listOf(Violation.at(ViolationType.SAFE_DISTANCE, 3.0, ""), Violation.at(ViolationType.SAFE_DISTANCE, 9.0, "")))
+        val s = session("a", 17.4, violations = listOf(v500(3.0), v500(9.0)))
         val once = AppData().claim(s, now)
         assertNotNull(once)
         assertEquals(16, once!!.totalPoints)
@@ -73,7 +76,7 @@ class RepoLogicTest {
             .claim(session("old", 10.0, ms(2026, 10, 14)), now)!! // 30일 밖 (10/15부터 포함)
             .claim(session("edge", 2.0, ms(2026, 10, 15, 0)), now)!! // 30일 창 첫날
             .claim(session("mon", 5.0, ms(2026, 11, 9)), now)!! // 이번 주 월
-            .claim(session("fri", 12.0, ms(2026, 11, 13), listOf(Violation.at(ViolationType.SAFE_DISTANCE, 6.0, ""))), now)!!
+            .claim(session("fri", 12.0, ms(2026, 11, 13), listOf(v500(6.0))), now)!!
         val m = d.monthStats(now, zone)
         assertEquals(19.0, m.distanceKm, 1e-9)
         assertEquals(18.5, m.safeKm, 1e-9)

@@ -21,11 +21,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
- * 주행 알림 3종 (Figma 97:2250). 지금 띄울 알림을 [alert]로 내보내 앱 안 팝업이 그리고, 같은 내용을 시스템 알림 센터에도 남긴다.
+ * 주행 알림 2종 (Figma 97:2250). 지금 띄울 알림을 [alert]로 내보내 앱 안 팝업이 그리고, 같은 내용을 시스템 알림 센터에도 남긴다.
  * 차량용 안드로이드는 전화·길안내·메시지 알림만 화면 위(헤드업)에 띄우므로 (AOSP CarHeadsUpNotificationManager), 팝업은 앱이 직접 그린다.
  * - 주행 끝: 적립 가능한 주행이 끝나고 P로 2초
  * - 재탑승: 적립 안 한 주행이 있는데 정차 상태로 P에서 다른 기어로 (출발하면 새 주행이 시작돼 이전 주행은 적립 못 함)
- * - N모드: N + 정차 5초 → 광고 보고 5P. 움직이거나 기어를 바꾸면 알림을 거둔다 (PRD §7)
+ * (N모드 광고 알림은 Pleos 가이드 "알림에 광고 금지"로 제거)
  * 조건이 깨지면 알림을 지우고, 같은 주행에선 한 번만 띄운다.
  */
 class DriveNotifier(private val context: Context, private val container: AppContainer, scope: CoroutineScope) {
@@ -38,7 +38,7 @@ class DriveNotifier(private val context: Context, private val container: AppCont
     /** 지금 띄울 알림 (앱 안 팝업용). 조건이 깨지거나 닫으면 null */
     val alert: StateFlow<Alert?> = _alert
 
-    private enum class Kind { NONE, END, REBOARD, AD }
+    private enum class Kind { NONE, END, REBOARD }
     private data class Cond(val kind: Kind, val key: Long?, val points: Int)
 
     init {
@@ -52,7 +52,6 @@ class DriveNotifier(private val context: Context, private val container: AppCont
                 val kind = when {
                     live.canClaim && stopped && gear != null && gear != Gear.P && gear != Gear.UNKNOWN -> Kind.REBOARD
                     live.canClaim && gear == Gear.P -> Kind.END
-                    gear == Gear.N && stopped && !live.canClaim -> Kind.AD
                     else -> Kind.NONE
                 }
                 Cond(kind, live.startedAtMs, if (kind == Kind.END) live.livePoints else 0) // 주행 중 점수 변화로 매번 갱신되지 않게
@@ -68,10 +67,6 @@ class DriveNotifier(private val context: Context, private val container: AppCont
                         once("end-${c.key}") {
                             post("🚗 ${c.points}P가 쌓였어요!", "빠르게 주행 분석하고 포인트를 적립하세요!", "포인트 적립하기", ACTION_CLAIM)
                         }
-                    }
-                    Kind.AD -> {
-                        delay(5000)
-                        post("잠시 정차 중 ${AD_POINTS}P 받기!", "광고 보고 추가 적립하세요!", "광고 보고 ${AD_POINTS}P받기", ACTION_AD)
                     }
                 }
             }
@@ -115,9 +110,7 @@ class DriveNotifier(private val context: Context, private val container: AppCont
     companion object {
         const val CHANNEL = "drive_points"
         const val ID = 1
-        const val AD_POINTS = 5
         const val ACTION_CLAIM = "com.pure.chageumtong.CLAIM"
-        const val ACTION_AD = "com.pure.chageumtong.WATCH_AD"
     }
 }
 

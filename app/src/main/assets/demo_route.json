@@ -6,8 +6,11 @@
     { "startKm": 3.0,   "endKm": 3.5,   "limitKmh": 60, "speedKmh": 55.0, "isCurve": true, "label": "종로구 21-22" },
     { "startKm": 3.5,   "endKm": 4.95,  "limitKmh": 60, "speedKmh": 60.0, "label": "중구 2-3" },
     { "startKm": 4.95,  "endKm": 5.05,  "limitKmh": 50, "speedKmh": 70.0, "label": "중구 5-1" },
-    { "startKm": 5.05,  "endKm": 10.0,  "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" }
+    { "startKm": 5.05,  "endKm": 6.0,   "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" },
+    { "startKm": 6.0,   "endKm": 6.3,   "limitKmh": 60, "speedKmh": 40.0, "rampKmhPerS": 10.0, "label": "용산구 3-4" },
+    { "startKm": 6.3,   "endKm": 10.0,  "limitKmh": 60, "speedKmh": 60.0, "label": "용산구 3-4" }
   ],
+  "stopKmhPerS": 12.0,
   "events": [
     { "atKm": 7.0, "type": "SAFE_DISTANCE", "label": "용산구 3-4" }
   ],

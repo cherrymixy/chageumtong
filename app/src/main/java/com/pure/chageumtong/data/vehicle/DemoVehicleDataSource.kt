@@ -49,27 +49,10 @@ class DemoVehicleDataSource(
     }
 
     private suspend fun play(route: DemoRoute) {
-        val t0 = System.currentTimeMillis()
-        var simSec = 0L
-        var km = 0.0
-        val events = route.events.sortedBy { it.atKm }.toMutableList()
-        fun at(sec: Long) = t0 + sec * 1000
-
-        while (km < route.totalKm) {
-            val seg = route.segmentAt(km)
-            val mps = seg.speedKmh / 3.6
-            val event = events.firstOrNull()?.takeIf { km >= it.atKm }?.also { events.removeAt(0) }
-            _inputs.emit(
-                DriveInput(VehicleSample(at(simSec), mps, Gear.D), seg.toRoadSegment(), event?.type, event?.label ?: ""),
-            )
-            km += mps / 1000.0 // 가상 1초 동안 이동
-            simSec++
+        demoInputs(route, System.currentTimeMillis()).forEach {
+            _inputs.emit(it)
             delay(TICK_MS)
         }
-        // 정차 → P (주행 종료 조건)
-        _inputs.emit(DriveInput(VehicleSample(at(simSec), 0.0, Gear.D)))
-        delay(TICK_MS)
-        _inputs.emit(DriveInput(VehicleSample(at(simSec + 1), 0.0, Gear.P)))
     }
 
     companion object {
@@ -77,3 +60,39 @@ class DemoVehicleDataSource(
         const val TICK_MS = 60L
     }
 }
+
+/**
+ * 데모 경로 → 가상 1초 간격 입력 목록. 0에서 출발해 구간 속도까지 rampKmhPerS로 서서히 바꾸고,
+ * 끝나면 stopKmhPerS로 정지 → P. 구간 사이 계단식 속도 변화가 급가속·급감속으로 오판되지 않게 한다.
+ */
+fun demoInputs(route: DemoRoute, t0: Long): List<DriveInput> {
+    val out = mutableListOf<DriveInput>()
+    var simSec = 0L
+    var km = 0.0
+    var kmh = 0.0
+    val events = route.events.sortedBy { it.atKm }.toMutableList()
+    fun sample(gear: Gear = Gear.D) = VehicleSample(t0 + simSec * 1000, kmh / 3.6, gear)
+
+    out += DriveInput(sample()) // 정지 상태에서 출발 (급출발 판정용 기준 샘플)
+    simSec++
+    while (km < route.totalKm) {
+        val seg = route.segmentAt(km)
+        kmh = approach(kmh, seg.speedKmh, seg.rampKmhPerS)
+        val event = events.firstOrNull()?.takeIf { km >= it.atKm }?.also { events.removeAt(0) }
+        out += DriveInput(sample(), seg.toRoadSegment(), event?.type, event?.label ?: "")
+        km += kmh / 3600.0 // 가상 1초 동안 이동
+        simSec++
+    }
+    // 정차 → P (주행 종료 조건)
+    val last = route.segments.last().toRoadSegment()
+    while (kmh > 0.0) {
+        kmh = approach(kmh, 0.0, route.stopKmhPerS)
+        out += DriveInput(sample(), last)
+        simSec++
+    }
+    out += DriveInput(sample(Gear.P))
+    return out
+}
+
+private fun approach(cur: Double, target: Double, step: Double): Double =
+    if (cur < target) minOf(cur + step, target) else maxOf(cur - step, target)

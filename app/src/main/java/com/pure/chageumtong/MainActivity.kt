@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleAction(intent: Intent?) {
-        intent?.action?.takeIf { it == DriveNotifier.ACTION_CLAIM || it == DriveNotifier.ACTION_AD }
+        intent?.action?.takeIf { it == DriveNotifier.ACTION_CLAIM }
             ?.let {
                 container.notifier.dismiss() // 알림 버튼으로 들어오면 앱 팝업도 닫음
                 container.pendingAction.value = it
