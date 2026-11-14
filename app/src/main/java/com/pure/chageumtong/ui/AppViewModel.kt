@@ -31,6 +31,18 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     val demoRoute = c.demoRoute
     /** 마지막 차량 입력 (팝업이 기어·속도를 본다) */
     val input = c.lastInput
+    val pendingAction = c.pendingAction
+    val alert = c.notifier.alert
+
+    fun dismissAlert() = c.notifier.dismiss()
+
+    /** 팝업 버튼 = 알림 버튼과 같은 동작 */
+    fun runAlertAction(action: String) {
+        c.notifier.dismiss()
+        c.pendingAction.value = action
+    }
+
+    fun consumeAction() { c.pendingAction.value = null }
 
     val data: StateFlow<AppData> = c.points.data.stateIn(viewModelScope, SharingStarted.Eagerly, AppData())
     val month: StateFlow<MonthStats?> = c.points.monthStats.stateIn(viewModelScope, SharingStarted.Eagerly, null)

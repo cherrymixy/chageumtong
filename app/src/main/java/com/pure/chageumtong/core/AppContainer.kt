@@ -51,9 +51,15 @@ class AppContainer(context: Context) {
     /** 앱 화면이 보이는지 (MainActivity onStart/onStop). 주행 위젯 오버레이가 본다 */
     val appVisible = MutableStateFlow(false)
 
+    /** 알림 버튼으로 앱이 열렸을 때 할 일 (DriveNotifier.ACTION_*). 화면이 처리하면 null로 */
+    val pendingAction = MutableStateFlow<String?>(null)
+
     private val _lastInput = MutableStateFlow<DriveInput?>(null)
     /** 엔진이 마지막으로 받은 입력 (디버그 표시용) */
     val lastInput: StateFlow<DriveInput?> = _lastInput.asStateFlow()
+
+    /** 주행 알림 (lastInput·engine 뒤에 만들어야 함) */
+    val notifier = DriveNotifier(appContext, this, scope)
 
     /** 지금 주행이 데모 경로였으면 그 ID (분석 화면 지도 연결용) */
     private var currentRouteId: String? = null

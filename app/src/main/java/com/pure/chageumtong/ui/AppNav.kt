@@ -35,7 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pure.chageumtong.core.AppContainer
-import com.pure.chageumtong.ui.components.DrivePopupHost
+import com.pure.chageumtong.ui.components.DriveAlertHost
 import com.pure.chageumtong.ui.screens.analysis.AnalysisScreen
 import com.pure.chageumtong.ui.screens.history.HistoryScreen
 import com.pure.chageumtong.ui.screens.home.HomeScreen
@@ -118,6 +118,6 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                 }
             }
         }
-        DrivePopupHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.TopCenter).padding(top = D.ScreenPad))
+        DriveAlertHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.TopCenter).padding(top = D.ScreenPad))
     }
 }
