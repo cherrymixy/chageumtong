@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 107:436 (Group 17065) SVG 그대로 변환 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,0a32,32 0,1 1,0 64a32,32 0,1 1,0 -64z" />
+    <path
+        android:strokeColor="#5EC1F2"
+        android:strokeWidth="6.89231"
+        android:strokeLineCap="round"
+        android:pathData="M18.7077,29.8148L29.4366,42.3333C29.8619,42.8296 30.6439,42.7813 31.0049,42.2365L45.2923,20.6769" />
+</vector>

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import com.pure.chageumtong.R
 import com.pure.chageumtong.ui.theme.D
 import com.pure.chageumtong.ui.theme.Primary
+import com.pure.chageumtong.ui.theme.PrimaryDeep
 import com.pure.chageumtong.ui.theme.StrokeGray
 import com.pure.chageumtong.ui.theme.Surface
 import com.pure.chageumtong.ui.theme.T
@@ -169,14 +170,14 @@ fun Label(text: String, modifier: Modifier = Modifier, color: Color = TextSub) =
 
 /** 반원 게이지: Track 트랙 + Primary 진행, 끝 라운드. 높이 = 폭/2 + 두께/2 */
 @Composable
-fun SemiGauge(ratio: Int, modifier: Modifier = Modifier, stroke: Dp = fig(28)) {
+fun SemiGauge(ratio: Int, modifier: Modifier = Modifier, stroke: Dp = fig(28), color: Color = Primary) {
     Canvas(modifier) {
         val s = stroke.toPx()
         val d = size.width - s
         val topLeft = Offset(s / 2, s / 2)
         val style = Stroke(s, cap = StrokeCap.Round)
         drawArc(Track, 180f, 180f, false, topLeft, Size(d, d), style = style)
-        if (ratio > 0) drawArc(Primary, 180f, 180f * ratio.coerceIn(0, 100) / 100f, false, topLeft, Size(d, d), style = style)
+        if (ratio > 0) drawArc(color, 180f, 180f * ratio.coerceIn(0, 100) / 100f, false, topLeft, Size(d, d), style = style)
     }
 }
 
@@ -227,7 +228,7 @@ fun ProgressRail(targetKm: Double, violations: List<Violation>, modifier: Modifi
 
 private val WEEK_DAYS = listOf("월", "화", "수", "목", "금", "토", "일")
 
-/** 이번 주 월~일 막대 (Figma week-chart): 막대 간격 10, 라운드 8, 오늘 = Primary */
+/** 이번 주 월~일 막대 (Figma week-chart): 막대 간격 10, 라운드 8, 오늘 = PrimaryDeep */
 @Composable
 fun WeekBars(values: List<Double>, todayIndex: Int, modifier: Modifier = Modifier, barsHeight: Dp = fig(125)) {
     val maxV = values.maxOrNull()?.takeIf { it > 0 } ?: 1.0
@@ -237,7 +238,7 @@ fun WeekBars(values: List<Double>, todayIndex: Int, modifier: Modifier = Modifie
             values.forEachIndexed { i, v ->
                 Box(
                     Modifier.weight(1f).height((barsHeight * (v / maxV).toFloat()).coerceAtLeast(fig(8)))
-                        .background(if (i == todayIndex) Primary else Track, RoundedCornerShape(D.RadiusBar)),
+                        .background(if (i == todayIndex) PrimaryDeep else Track, RoundedCornerShape(D.RadiusBar)),
                 )
             }
         }
@@ -247,7 +248,7 @@ fun WeekBars(values: List<Double>, todayIndex: Int, modifier: Modifier = Modifie
                     d,
                     Modifier.weight(1f),
                     style = if (i == todayIndex) T.CaptionBold else T.Caption,
-                    color = if (i == todayIndex) Primary else TextTertiary,
+                    color = if (i == todayIndex) PrimaryDeep else TextTertiary,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -309,14 +310,14 @@ fun RouteMap(
             // 말풍선 꼬리 끝(좌상단)이 선택 지점을 가리키도록. 넘치면 화면 안으로 밀어 넣는다.
             val x = (p.x + with(density) { fig(24).toPx() }).coerceIn(0f, max(0f, wPx - cardW))
             val y = (p.y + with(density) { fig(24).toPx() }).let { if (it + cardH > hPx) p.y - cardH - with(density) { fig(24).toPx() } else it }.coerceAtLeast(0f)
-            Bubble(v, Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) }.width(fig(588)))
+            ViolationBubble(v, Modifier.offset { IntOffset(x.roundToInt(), y.roundToInt()) }.width(fig(588)))
         }
     }
 }
 
 /** 말풍선 (Figma Union 95:2739): 흰 바탕 + #858585 2px 테두리, 좌상단 꼬리 */
 @Composable
-private fun Bubble(v: Violation, modifier: Modifier) {
+fun ViolationBubble(v: Violation, modifier: Modifier) {
     val tailW = fig(98)
     val tailH = fig(22)
     val radius = fig(32)

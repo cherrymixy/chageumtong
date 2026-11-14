@@ -13,6 +13,9 @@ import com.pure.chageumtong.domain.LiveDrive
 import com.pure.chageumtong.domain.Place
 import com.pure.chageumtong.domain.Product
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -55,6 +58,19 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         live.state == DriveState.DRIVING ||
             (s != null && ((s.gear != Gear.P && s.gear != Gear.UNKNOWN) || s.speedMps > 0.1))
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** 홈 일러스트 연출: 멈춤/주행/과속 */
+    val motion: StateFlow<DriveMotion> = c.lastInput.map { it.toMotion() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, DriveMotion())
+
+    /** 급정거가 감지될 때마다 1씩 오름 (화면은 값이 바뀌면 끼익 연출) */
+    private val _brakeTick = MutableStateFlow(0)
+    val brakeTick: StateFlow<Int> = _brakeTick.asStateFlow()
+
+    init {
+        val brake = HardBrakeDetector()
+        viewModelScope.launch { c.lastInput.collect { input -> if (input != null && brake.onSample(input.sample)) _brakeTick.value++ } }
+    }
 
     fun startDemo() = c.demo.start()
 

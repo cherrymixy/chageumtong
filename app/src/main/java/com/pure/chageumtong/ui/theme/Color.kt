@@ -2,10 +2,12 @@ package com.pure.chageumtong.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Figma 95:2142(홈) · 95:2638/95:2689(분석)에서 추출 (STEP 6-A)
-val Primary = Color(0xFF00AAFF)
-val PrimaryDark = Color(0xFF0689CA)
-val PrimaryTint = Color(0x1A00AAFF) // 10%
+// Figma 107:8(홈) · 107:426(분석) 기준 (11/14 색 개편, 이전 #00AAFF 계열)
+val Primary = Color(0xFF5EC1F2)
+val PrimaryDeep = Color(0xFF59B8E7) // 홈 게이지·오늘 막대
+val PrimaryHero = Color(0xFF11A2EA) // 홈 적립될 포인트 숫자
+val PrimaryDark = Color(0xFF2C96CC) // 적립 내역 확인 버튼
+val PrimaryTint = Color(0x1A5EC1F2) // 10%
 val Bg = Color(0xFFEDEEF0)
 val Surface = Color(0xFFFDFEFF)
 val SurfaceWarm = Color(0xFFFFFFFD) // 홈 메인 카드
