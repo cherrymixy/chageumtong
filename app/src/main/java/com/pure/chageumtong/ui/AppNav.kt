@@ -5,6 +5,7 @@ import com.pure.chageumtong.ui.theme.TextStat
 import com.pure.chageumtong.ui.theme.Surface
 import com.pure.chageumtong.ui.theme.StrokeGray
 import com.pure.chageumtong.ui.theme.MIN_TOUCH
+import com.pure.chageumtong.ui.theme.POPUP_EDGE
 import com.pure.chageumtong.ui.theme.D
 import com.pure.chageumtong.R
 import androidx.compose.ui.res.painterResource
@@ -118,6 +119,6 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                 }
             }
         }
-        DriveAlertHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.TopCenter).padding(top = D.ScreenPad))
+        DriveAlertHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.BottomCenter).padding(start = POPUP_EDGE, end = POPUP_EDGE, bottom = POPUP_EDGE))
     }
 }

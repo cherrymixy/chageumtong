@@ -18,6 +18,9 @@ fun figSp(px: Number): TextUnit = (px.toFloat() * FIG_SCALE).sp
 val MIN_TOUCH = 76.dp
 val BODY = 24.sp
 
+/** Pleos UI 가이드 Toast: 앱 영역 아래, 양옆·아래 여백 24 (dp 기준이라 fig() 아님) */
+val POPUP_EDGE = 24.dp
+
 // Figma 레이아웃 토큰 (px → fig())
 object D {
     val ScreenPad = fig(30)
