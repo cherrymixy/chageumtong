@@ -86,23 +86,23 @@ class DriveSessionEngineTest {
         assertTrue(live.violations.isEmpty())
     }
 
-    /** 데모 시나리오(PRD §4): 25km, 7km 급커브, 11km 과속, 13.5km 안전거리 → 23P / 94% */
-    @Test fun `데모 시나리오 23P 94퍼센트`() {
+    /** 데모 시나리오(PRD §4): 10km, 3km 급커브, 4.95km 과속, 7km 안전거리 → 8P / 85% */
+    @Test fun `데모 시나리오 8P 85퍼센트`() {
         val normal = RoadSegment(limitKmh = 60)
-        while (live.distanceKm < 7.0) drive(60.0, 1, normal)
+        while (live.distanceKm < 3.0) drive(60.0, 1, normal)
         drive(55.0, 30, RoadSegment(limitKmh = 60, isCurve = true, locationLabel = "종로구 21-22"))
-        while (live.distanceKm < 11.0) drive(60.0, 1, normal)
+        while (live.distanceKm < 4.95) drive(60.0, 1, normal)
         drive(70.0, 5, RoadSegment(limitKmh = 50, locationLabel = "중구 5-1"))
-        while (live.distanceKm < 13.5) drive(60.0, 1, normal)
+        while (live.distanceKm < 7.0) drive(60.0, 1, normal)
         engine.injectViolation(ViolationType.SAFE_DISTANCE, "용산구 3-4")
-        while (live.distanceKm < 25.0) drive(60.0, 1, normal)
+        while (live.distanceKm < 10.0) drive(60.0, 1, normal)
         drive(0.0, 1)
         park()
 
         assertEquals(DriveState.ENDED, live.state)
         assertEquals(listOf("급커브 구간 미감속", "20km 과속", "안전거리 미확보"), live.violations.map { it.title })
-        assertEquals(23, live.livePoints)
-        assertEquals(94, live.safeRatio)
+        assertEquals(8, live.livePoints)
+        assertEquals(85, live.safeRatio)
         assertEquals("좋아요!", praise(live.safeRatio))
     }
 }

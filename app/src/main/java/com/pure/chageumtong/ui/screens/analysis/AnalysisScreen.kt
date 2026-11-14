@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import com.pure.chageumtong.BuildConfig
 import com.pure.chageumtong.R
 import com.pure.chageumtong.domain.DriveSession
 import com.pure.chageumtong.domain.praise
@@ -84,7 +85,13 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
                 }
             } else {
                 LeftPanel(session, readonly, vm, selected) { selected = it }
-                RouteMap(vm.demoRoute.polyline, session.distanceKm, session.violations, selected, Modifier.weight(1f).fillMaxHeight())
+                val mapMod = Modifier.weight(1f).fillMaxHeight()
+                // 카카오 키·경로 좌표가 있으면 실제 지도, 없으면 그림 지도 (심사용 빌드 등)
+                if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank() && vm.demoRoute.path.isNotEmpty()) {
+                    KakaoRouteMap(vm.demoRoute.path, session.distanceKm, session.violations, selected, mapMod)
+                } else {
+                    RouteMap(vm.demoRoute.polyline, session.distanceKm, session.violations, selected, mapMod)
+                }
             }
         }
         Spacer(Modifier.height(D.BottomGap))
@@ -103,30 +110,33 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
 @Composable
 private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, selected: Int, onSelect: (Int) -> Unit) {
     Box(Modifier.width(fig(667)).fillMaxHeight().background(Color.White)) {
-        // 헤더 (높이 222, 당근 일러스트는 아래가 잘림)
+        // 헤더 (높이 222, Figma 107:432): +NP 왼쪽, 체크 아이콘 + 문구 오른쪽
         Box(Modifier.fillMaxWidth().height(fig(222)).background(Primary).clip(RoundedCornerShape(0))) {
-            // 적립 순간: 당근이 통 튀어 들어오고 +NP가 0부터 올라감. 지난 기록 열람은 정지 상태 (STEP 11)
+            // 적립 순간: 체크가 통 튀어 들어오고 +NP가 0부터 올라감. 지난 기록 열람은 정지 상태 (STEP 11)
             val pop = remember { Animatable(if (readonly) 1f else 0f) }
             LaunchedEffect(Unit) {
                 if (readonly) return@LaunchedEffect
                 delay(300) // 화면 전환 페이드가 끝난 뒤에 튀어야 보임
                 pop.animateTo(1f, spring(dampingRatio = 0.4f, stiffness = Spring.StiffnessVeryLow))
             }
-            Image(
-                painterResource(R.drawable.carrot_header), null,
-                Modifier.offset(fig(334), fig(69)).size(fig(367)).graphicsLayer { scaleX = pop.value; scaleY = pop.value },
-            )
             Row(Modifier.offset(fig(36), fig(24)), verticalAlignment = Alignment.Bottom) {
                 Text("+${countUp(s.points, start = if (readonly) s.points else 0, ms = 1200)}", style = T.Hero, color = Color.White)
                 Text("P", style = T.Hero, color = Color.White)
-                Spacer(Modifier.width(fig(28)))
+            }
+            // 아이콘 중심 x = 518.5 (486.5 + 64/2), 문구 시작 415 → 폭 207 칸에 가운데 정렬
+            Column(Modifier.offset(fig(415), fig(65)).width(fig(207)), horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(
+                    painterResource(R.drawable.ic_check_circle), null,
+                    Modifier.size(fig(64)).graphicsLayer { scaleX = pop.value; scaleY = pop.value },
+                )
+                Spacer(Modifier.height(fig(10)))
                 val sub = if (readonly) {
                     val d = Instant.ofEpochMilli(s.startedAt).atZone(vm.zone)
                     "${d.monthValue}월 ${d.dayOfMonth}일 주행"
                 } else {
                     "적립이 완료됐어요!"
                 }
-                Text(sub, style = T.HeaderSub, color = Color.White, modifier = Modifier.padding(bottom = fig(28)))
+                Text(sub, style = T.HeaderSub, color = Color.White, maxLines = 1, softWrap = false)
             }
         }
         Text("이번 주행 분석", Modifier.offset(fig(36), fig(249)), style = T.Section, color = TextTitle)
@@ -156,7 +166,7 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
             Text("위반 없이 달려서 이동한 거리가 모두 포인트로 적립됐어요.", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
         } else {
             Text("포인트 미적립 구간", Modifier.offset(fig(30), fig(808)), style = T.SectionBold, color = TextSection)
-            Text("버튼을 눌러 포인트 인정되지 않은 이유 확인하기", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
+            Text("구간별로 포인트가 인정되지 않은 이유를 확인해보세요.", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
             LazyRow(
                 Modifier.offset(y = fig(901)).fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = fig(30)),

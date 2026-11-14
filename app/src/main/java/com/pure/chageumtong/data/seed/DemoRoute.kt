@@ -6,7 +6,11 @@ import com.pure.chageumtong.domain.ViolationType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** 데모 경로 (assets/demo_route.json). polyline: 분석 화면 지도용 정규화 좌표 [x, y] 0~1. */
+/**
+ * 데모 경로 (assets/demo_route.json).
+ * polyline: 그림 지도(키 없을 때)용 정규화 좌표 [x, y] 0~1.
+ * path: 카카오맵용 실제 도로 좌표 [위도, 경도] (scripts/fetch_kakao_route.py 가 카카오내비 길찾기로 채움).
+ */
 @Serializable
 data class DemoRoute(
     val id: String,
@@ -14,6 +18,7 @@ data class DemoRoute(
     val segments: List<DemoSegment>,
     val events: List<DemoEvent>,
     val polyline: List<List<Float>>,
+    val path: List<List<Double>> = emptyList(),
 ) {
     fun segmentAt(km: Double): DemoSegment = segments.lastOrNull { km >= it.startKm } ?: segments.first()
 }

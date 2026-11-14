@@ -87,12 +87,12 @@
 ```
 VehicleDataSource (interface)  ── speedMps: Flow, gear: Flow
  ├─ PleosVehicleDataSource   ← Vehicle SDK 실데이터 (에뮬레이터 adb / Virtual Console / 실차)
- └─ DemoVehicleDataSource    ← 25km 시나리오를 약 90초로 압축 재생
+ └─ DemoVehicleDataSource    ← 10km 시나리오를 약 36초로 압축 재생
          ↓
 DriveSessionEngine (거리 적분, 위반 판정, 상태머신)  ← 입력원 몰라도 됨
 ```
 
-- **데모 주행**: 대기 상태 홈에 작은 `▶ 데모 주행` 칩. 탭하면 25km 시나리오 재생(7km 급커브, 11km 과속 10km, 13.5km 안전거리 미확보). 종료 시 자동으로 기어 P.
+- **데모 주행**: 대기 상태 홈에 작은 `▶ 데모 주행` 칩. 탭하면 10km 시나리오 재생(3km 급커브, 4.95km 과속 20km, 7km 안전거리 미확보). 종료 시 자동으로 기어 P.
 - 데모 중에도 화면·로직은 실주행과 100% 동일 경로를 탄다 (분기는 입력원뿐).
 - 실 SDK 입력은 `checkXXXCapability`로 지원 여부를 먼저 확인하고, 미지원이면 조용히 Demo만 노출.
 
@@ -286,11 +286,11 @@ Figma 프레임 1700×1184와 거의 같으므로 → **세로 기준 스케일 
 |---|---|---|
 | D1 | 위반 구간 길이 | ±250m |
 | D2 | 실주행 제한속도 | NaviHelper `onCurrentRoadSpeedLimit(int)` 값 우선, 없으면 60km/h |
-| D3 | 데모 재생 | 실제 90초 재생, 샘플 시각은 압축(약 ×17) → 화면·엔진에는 약 25분 / 25km 주행으로 기록. 속도값은 실제 km/h 그대로 |
+| D3 | 데모 재생 | 실제 약 36초 재생, 샘플 시각은 압축(약 ×17) → 화면·엔진에는 약 10분 / 10km 주행으로 기록. 속도값은 실제 km/h 그대로 |
 | D4 | 레일 최대값 | 25km 기본, 초과 시 5km 단위 확장 |
 | D5 | 시드 데이터 규모 | 4주, 주 4–6회 주행 |
 
 - 데모 과속 이벤트: 제한 50km/h 구간에서 70km/h → 칩 `20km 과속` (규칙상 +10km/h "초과"여야 하므로 10km는 불가)
-- 데모 예상 결과: 25km − 미적립 1.5km = 23.5km → **23P / 94% "좋아요!"**
+- 데모 예상 결과: 10km − 미적립 1.5km = 8.5km → **8P / 85% "좋아요!"**
 - 속도는 Vehicle SDK 2.3.2에 API가 없어 AAOS `CarPropertyManager`의 `PERF_VEHICLE_SPEED`(m/s)로 읽는다. 기어는 Vehicle SDK `Gear`. (호환성 문서가 AAOS 프로퍼티 사용을 안내함)
 - 기어에는 `checkXXXCapabilities` API가 없음 → 첫 조회 실패 시 미지원 처리.
