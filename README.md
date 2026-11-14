@@ -1,18 +1,39 @@
 <div align="center">
 
-# 🥕 차금통
+<img src="docs/readme/hero.png" alt="차금통 — 안전하게 달린 거리만큼 쌓이는 차 안의 저금통" width="100%">
+
+<br>
+
+# 차금통 <sub>chageumtong</sub>
 
 **안전하게 달린 거리만큼 쌓이는 차 안의 저금통**
 
-팀 **삼남매** · Pleos Connect 차량용 앱 개발 공모전 출품작
+유니콘과 함께 달리고, 주행을 돌아보고, 포인트를 모아요.<br>
+팀 **삼남매**의 Pleos Connect 차량용 앱 개발 공모전 출품작입니다.
 
-![홈](docs/screenshots/01_home.png)
+<br>
+
+![Pleos Connect](https://img.shields.io/badge/Pleos_Connect-Automotive-5EC1F2?style=flat-square&labelColor=233747)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white&labelColor=233747)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white&labelColor=233747)
+![Android](https://img.shields.io/badge/Android-API_34-3DDC84?style=flat-square&logo=android&logoColor=white&labelColor=233747)
+
+<br>
+
+[**APK 다운로드**](apk/삼남매_차금통_release.apk) &nbsp; / &nbsp;
+[**화면 미리보기**](#화면-미리보기) &nbsp; / &nbsp;
+[**실행 방법**](#실행-방법) &nbsp; / &nbsp;
+[**한계와 계획**](#한계와-계획)
 
 </div>
 
-## 한눈에 보기
+---
+
+## 이런 앱이에요
 
 주행이 끝나면 이번 주행을 분석해 **안전하게 달린 거리 1km당 1포인트**를 적립합니다. 위험 운전이 감지된 구간은 빠지고, 모은 포인트로 차량 기능·테마·용품을 사거나 근처 사용처로 길안내를 받습니다. 당근(포인트)을 먹으며 달리는 유니콘이 주행을 함께합니다.
+
+<img src="docs/readme/concept.png" alt="달리기: 거리 기록 → 돌아보기: 주행 분석 → 쌓고 쓰기: 포인트 적립과 활용" width="100%">
 
 | | |
 |---|---|
@@ -22,6 +43,16 @@
 | ▶️ **바로 보기** | 앱 실행 → 홈 오른쪽 위 **▶ 데모 주행** → 약 20초 뒤 **[주행 분석하고 적립하기]** |
 
 ## 핵심 기능
+
+| 기능 | 이렇게 동작해요 |
+|---|---|
+| 🥕 **주행 적립** | 기어 D로 출발하면 거리와 적립 예정 포인트를 기록해요. 포인트가 오를 때마다 유니콘이 당근을 먹어요. |
+| 📊 **주행 분석** | 정차 후 안전운전 거리와 미적립 구간을 확인해요. 적립이 끝나면 음성으로 알려줘요. |
+| 🎁 **포인트 사용** | 상점에서 차량 기능과 테마, 용품을 구매하고 지도에서 주변 사용처를 찾아요. |
+| 🚗 **차량 환경 대응** | 주행 중 조작 제한, 분할 화면, 다른 앱 위에 띄우는 주행 위젯을 지원해요. |
+
+<details>
+<summary><strong>기능별 상세 동작 보기</strong></summary>
 
 ### 1. 실시간 주행 적립
 - 기어 **D**로 출발하면 이동 거리와 **이번 주행으로 적립될 포인트**가 실시간으로 올라갑니다.
@@ -45,19 +76,44 @@
 - **알림**: 주차(P) 2초 뒤 적립 안내, 적립하지 않고 다시 출발하려 하면 "잊어버린 포인트" 안내. 앱 안 팝업과 시스템 알림 센터에 함께 남습니다.
 - **가독성**: 터치 영역 최소 76dp, Pleos UI 가이드 Typography 하한 이상.
 
-## 화면
+</details>
 
-| 홈 (대기) | 주행 중 |
-|---|---|
-| ![홈](docs/screenshots/01_home.png) | ![주행 중](docs/screenshots/02_driving.png) |
-| **주행 분석** | **미적립 구간 선택** |
-| ![분석](docs/screenshots/03_analysis.png) | ![분석 칩](docs/screenshots/04_analysis_chip.png) |
-| **상점** | **지도 · 길안내** |
-| ![상점](docs/screenshots/05_shop.png) | ![지도](docs/screenshots/06_map.png) |
-| **적립 내역** | **마이페이지** |
-| ![적립 내역](docs/screenshots/07_history.png) | ![마이페이지](docs/screenshots/08_my.png) |
-| **포인트 적립 규칙** | **분할 화면 (내비와 함께)** |
-| ![적립 규칙](docs/screenshots/09_rules.png) | ![분할 화면](docs/screenshots/10_split.png) |
+<br>
+
+## 화면 미리보기
+
+저장소에 포함된 Pleos 에뮬레이터 실행 화면입니다. 이미지를 누르면 크게 볼 수 있어요.
+
+<div align="center">
+
+| 홈 | 주행 중 |
+|:---:|:---:|
+| <img src="docs/screenshots/01_home.png" alt="홈" width="460"> | <img src="docs/screenshots/02_driving.png" alt="주행 중" width="460"> |
+| 보유 포인트와 이번 달 주행을 확인해요 | 거리와 적립 예정 포인트가 올라가요 |
+
+| 주행 분석 | 미적립 구간 |
+|:---:|:---:|
+| <img src="docs/screenshots/03_analysis.png" alt="주행 분석" width="460"> | <img src="docs/screenshots/04_analysis_chip.png" alt="미적립 구간" width="460"> |
+| 안전운전 비율과 주행 경로를 돌아봐요 | 포인트가 쌓이지 않은 이유를 확인해요 |
+
+| 상점 | 지도와 길안내 |
+|:---:|:---:|
+| <img src="docs/screenshots/05_shop.png" alt="상점" width="460"> | <img src="docs/screenshots/06_map.png" alt="지도와 길안내" width="460"> |
+| 모은 포인트로 기능과 용품을 구매해요 | 주변 사용처를 찾고 길안내를 시작해요 |
+
+| 적립 내역 | 마이페이지 |
+|:---:|:---:|
+| <img src="docs/screenshots/07_history.png" alt="적립 내역" width="460"> | <img src="docs/screenshots/08_my.png" alt="마이페이지" width="460"> |
+| 언제 얼마나 적립했는지 확인해요 | 누적 기록과 보유 상품을 확인해요 |
+
+| 포인트 적립 규칙 | 분할 화면 |
+|:---:|:---:|
+| <img src="docs/screenshots/09_rules.png" alt="포인트 적립 규칙" width="460"> | <img src="docs/screenshots/10_split.png" alt="분할 화면" width="460"> |
+| 적립 기준을 단계별로 알아봐요 | 내비게이션과 차금통을 함께 띄워요 |
+
+</div>
+
+<br>
 
 ## 실행 방법
 
@@ -132,6 +188,14 @@ scripts/drive_demo.sh [속도km/h=60] [주행초=40]
 
 카카오 키는 `local.properties`(레포 미포함)에서 읽습니다. 앱에는 **지도용 네이티브 앱 키만** 들어가며(카카오 콘솔에 등록한 패키지명·서명에서만 동작), REST 키는 스크립트 실행용이라 APK에 들어가지 않습니다. 네이티브 키가 없는 빌드는 그림 지도와 시드 장소로 표시됩니다.
 
+## 디자인 컬러
+
+앱의 `ui/theme/Color.kt`에 정의된 주요 색상입니다.
+
+<img src="docs/readme/tokens.png" alt="Primary #5EC1F2, Point #11A2EA, Alert #FE9126, Background #EDEEF0, Surface #FDFEFF" width="100%">
+
+<br>
+
 ## 구조
 
 ```
@@ -164,3 +228,12 @@ app/src/main/java/com/pure/chageumtong/
 - 지도 장소 카드 사진: Daum 이미지 검색 결과의 **주소만 저장하고 실행 중에 불러와 표시**합니다(파일은 레포·APK에 없음). 저작권은 각 원 게시자에게 있으며 공모전 시연 목적으로만 사용합니다.
 - 서드파티 캐릭터(IP) 이미지는 사용하지 않습니다.
 - 폰트: [Pretendard](https://github.com/orioncactus/pretendard) — SIL Open Font License 1.1 (`docs/PRETENDARD_LICENSE.txt`)
+
+
+<br>
+
+---
+
+<div align="center">
+<sub>안전하게 달린 오늘이, 내일의 포인트로. 🥕<br>차금통 · 팀 삼남매</sub>
+</div>
