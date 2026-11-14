@@ -37,7 +37,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:screenOrientation="landscape"
+            android:resizeableActivity="true"
             android:theme="@style/Theme.CashDriving"
             android:windowSoftInputMode="adjustResize">
             <!-- 주행 중(D, 5km/h 초과)에도 화면이 가려지지 않도록: AAOS UX 제한 대상에서 제외 -->

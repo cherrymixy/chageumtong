@@ -1,5 +1,9 @@
 package com.pure.chageumtong.ui.screens.analysis
 
+import kotlin.math.floor
+import com.pure.chageumtong.ui.theme.LocalCompact
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -77,21 +81,24 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
         if (!readonly && session != null) vm.announcePoints(session.points)
     }
 
+    val compact = LocalCompact.current
     Column(Modifier.fillMaxSize().padding(start = D.ScreenPad, top = D.ScreenPad, end = D.ScreenPad)) {
-        Row(Modifier.fillMaxWidth().height(D.ContentHeight).clip(RoundedCornerShape(D.RadiusCard)).background(Surface)) {
+        if (compact && session != null) {
+            // 좁은 폭: 분석 패널 위, 지도 아래로 쌓고 세로 스크롤 (Figma 없음, 107:2 홈 규칙을 따름)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).clip(RoundedCornerShape(D.RadiusCard)).background(Surface),
+            ) {
+                LeftPanel(session, readonly, vm, selected, Modifier.fillMaxWidth().height(D.ContentHeight)) { selected = it }
+                RouteMapFor(vm, session, selected, Modifier.fillMaxWidth().height(fig(700)))
+            }
+        } else Row(Modifier.fillMaxWidth().height(D.ContentHeight).clip(RoundedCornerShape(D.RadiusCard)).background(Surface)) {
             if (session == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("주행 기록을 찾을 수 없어요", style = T.Section, color = TextTitle)
                 }
             } else {
-                LeftPanel(session, readonly, vm, selected) { selected = it }
-                val mapMod = Modifier.weight(1f).fillMaxHeight()
-                // 카카오 키·경로 좌표가 있으면 실제 지도, 없으면 그림 지도 (심사용 빌드 등)
-                if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank() && vm.demoRoute.path.isNotEmpty()) {
-                    KakaoRouteMap(vm.demoRoute.path, session.distanceKm, session.visibleViolations, selected, mapMod)
-                } else {
-                    RouteMap(vm.demoRoute.polyline, session.distanceKm, session.visibleViolations, selected, mapMod)
-                }
+                LeftPanel(session, readonly, vm, selected, Modifier.width(fig(667)).fillMaxHeight()) { selected = it }
+                RouteMapFor(vm, session, selected, Modifier.weight(1f).fillMaxHeight())
             }
         }
         Spacer(Modifier.height(D.BottomGap))
@@ -107,9 +114,20 @@ fun AnalysisScreen(vm: AppViewModel, sessionId: String, readonly: Boolean, onDon
     }
 }
 
+/** 카카오 키·경로 좌표가 있으면 실제 지도, 없으면 그림 지도 (심사용 빌드 등) */
 @Composable
-private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, selected: Int, onSelect: (Int) -> Unit) {
-    Box(Modifier.width(fig(667)).fillMaxHeight().background(Color.White)) {
+private fun RouteMapFor(vm: AppViewModel, session: DriveSession, selected: Int, mapMod: Modifier) {
+    if (BuildConfig.KAKAO_NATIVE_KEY.isNotBlank() && vm.demoRoute.path.isNotEmpty()) {
+        KakaoRouteMap(vm.demoRoute.path, session.distanceKm, session.visibleViolations, selected, mapMod)
+    } else {
+        RouteMap(vm.demoRoute.polyline, session.distanceKm, session.visibleViolations, selected, mapMod)
+    }
+}
+
+@Composable
+private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, selected: Int, modifier: Modifier, onSelect: (Int) -> Unit) {
+    val compact = LocalCompact.current
+    Box(modifier.background(Color.White)) {
         // 헤더 (높이 222, Figma 107:432): +NP 왼쪽, 체크 아이콘 + 문구 오른쪽
         Box(Modifier.fillMaxWidth().height(fig(222)).background(Primary).clip(RoundedCornerShape(0))) {
             // 적립 순간: 체크가 통 튀어 들어오고 +NP가 0부터 올라감. 지난 기록 열람은 정지 상태 (STEP 11)
@@ -124,7 +142,9 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
                 Text("P", style = T.Hero, color = Color.White)
             }
             // 아이콘 중심 x = 518.5 (486.5 + 64/2), 문구 시작 415 → 폭 207 칸에 가운데 정렬
-            Column(Modifier.offset(fig(415), fig(65)).width(fig(207)), horizontalAlignment = Alignment.CenterHorizontally) {
+            // 좁은 폭은 패널이 넓어져(786) 오른쪽 끝 기준으로 둠 (넓은 화면의 오른쪽 여백 45 유지)
+            val checkPos = if (compact) Modifier.align(Alignment.TopEnd).offset(-fig(45), fig(65)) else Modifier.offset(fig(415), fig(65))
+            Column(checkPos.width(fig(207)), horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
                     painterResource(R.drawable.ic_check_circle), null,
                     Modifier.size(fig(64)).graphicsLayer { scaleX = pop.value; scaleY = pop.value },
@@ -142,7 +162,8 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
         Text("이번 주행 분석", Modifier.offset(fig(36), fig(249)), style = T.Section, color = TextTitle)
 
         // 반원 게이지 (Group 14: 447 폭)
-        Column(Modifier.offset(fig(95), fig(293)).width(fig(447)), horizontalAlignment = Alignment.CenterHorizontally) {
+        val gaugePos = if (compact) Modifier.align(Alignment.TopCenter).offset(y = fig(293)) else Modifier.offset(fig(95), fig(293))
+        Column(gaugePos.width(fig(447)), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(contentAlignment = Alignment.BottomCenter) {
                 SemiGauge(s.safeRatio, Modifier.size(fig(447), fig(251)), stroke = fig(55))
                 Text("${s.safeRatio}%", style = T.GaugeLarge, color = Primary)
@@ -165,7 +186,19 @@ private fun LeftPanel(s: DriveSession, readonly: Boolean, vm: AppViewModel, sele
             Text("모든 구간 적립 완료!", Modifier.offset(fig(30), fig(808)), style = T.SectionBold, color = Primary)
             Text("위반 없이 달려서 이동한 거리가 모두 포인트로 적립됐어요.", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
         } else {
-            Text("포인트 미적립 구간", Modifier.offset(fig(30), fig(808)), style = T.SectionBold, color = TextSection)
+            Row(Modifier.offset(fig(30), fig(808)), verticalAlignment = Alignment.CenterVertically) {
+                Text("포인트 미적립 구간", style = T.SectionBold, color = TextSection)
+                // 위반 때문에 못 받은 포인트 = 이동거리 그대로였을 때 포인트 − 실제 포인트
+                val lost = floor(s.distanceKm + 1e-9).toInt() - s.points
+                if (lost > 0) {
+                    Text(
+                        "- ${lost}P",
+                        Modifier.padding(start = fig(12)).background(Alert.copy(alpha = 0.15f), RoundedCornerShape(fig(10)))
+                            .padding(horizontal = fig(12), vertical = fig(2)),
+                        style = T.SectionBold, color = Alert,
+                    )
+                }
+            }
             Text("구간별로 포인트가 인정되지 않은 이유를 확인해보세요.", Modifier.offset(fig(30), fig(848)), style = T.Hint, color = TextHint)
             LazyRow(
                 Modifier.offset(y = fig(901)).fillMaxWidth(),

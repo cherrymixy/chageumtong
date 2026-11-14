@@ -1,5 +1,6 @@
 package com.pure.chageumtong.ui.screens.shop
 
+import com.pure.chageumtong.ui.theme.LocalCompact
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -72,7 +73,16 @@ fun ShopScreen(vm: AppViewModel) {
     LaunchedEffect(driving) { if (driving) confirm = null } // 정차 중 열어둔 구매 창도 출발하면 닫음 (PRD §7)
 
     Column(Modifier.fillMaxSize().padding(start = fig(31), top = fig(32), end = fig(31))) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        val compact = LocalCompact.current
+        if (compact) {
+            // 좁은 폭: 토글(436)+포인트(470)가 한 줄에 안 들어가 두 줄로, 상품은 2열
+            PointsCard(total)
+            Spacer(Modifier.height(fig(20)))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                TabToggle(tab) { tab = it }
+                if (driving) Text("주행 중에는 구매할 수 없어요", Modifier.padding(start = fig(24)), style = T.Section, color = Alert)
+            }
+        } else Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TabToggle(tab) { tab = it }
             Spacer(Modifier.weight(1f))
             if (driving) Text("주행 중에는 구매할 수 없어요", Modifier.padding(end = fig(24)), style = T.Section, color = Alert)
@@ -80,7 +90,7 @@ fun ShopScreen(vm: AppViewModel) {
         }
         Spacer(Modifier.height(fig(37)))
         LazyVerticalGrid(
-            GridCells.Fixed(3),
+            GridCells.Fixed(if (compact) 2 else 3),
             Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = fig(24)),
             horizontalArrangement = Arrangement.spacedBy(fig(24)),
@@ -119,8 +129,13 @@ private fun TabToggle(tab: ShopTab, onSelect: (ShopTab) -> Unit) {
 
 /** 상품 카드 (95:2879): 사진 + 위아래 어두운 그라데이션, 이름·가격·흰 버튼 */
 @Composable
-private fun ProductCard(p: Product, owned: Boolean, enabled: Boolean, onBuy: () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(fig(368)).clip(RoundedCornerShape(fig(32)))) {
+internal fun ProductCard(
+    p: Product, owned: Boolean, enabled: Boolean,
+    modifier: Modifier = Modifier.fillMaxWidth().height(fig(368)),
+    stackPrice: Boolean = LocalCompact.current,
+    onBuy: () -> Unit,
+) {
+    Box(modifier.clip(RoundedCornerShape(fig(32)))) {
         AssetImage(p.imageAsset, Modifier.fillMaxSize())
         Box(Modifier.fillMaxWidth().height(fig(151)).background(Brush.verticalGradient(listOf(Scrim, Scrim.copy(alpha = 0f)))))
         Box(
@@ -130,7 +145,8 @@ private fun ProductCard(p: Product, owned: Boolean, enabled: Boolean, onBuy: () 
         Text(p.name, Modifier.offset(fig(32), fig(32)).padding(end = fig(64)), style = T.ProductName, color = Color.White, maxLines = 1)
         Text(
             p.priceLabel,
-            Modifier.align(Alignment.BottomStart).padding(start = fig(36), bottom = fig(34)),
+            // 좁은 폭(2열)은 카드가 좁아 가격이 버튼에 가려지므로 버튼 위로 올림
+            Modifier.align(Alignment.BottomStart).padding(start = fig(36), bottom = fig(if (stackPrice) 96 else 34)),
             style = T.ProductPrice.copy(shadow = Shadow(Color.Black.copy(alpha = 0.5f), Offset(2f, 2f), 4f)),
             color = Color.White,
         )

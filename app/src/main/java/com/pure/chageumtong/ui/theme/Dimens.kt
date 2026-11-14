@@ -1,5 +1,6 @@
 package com.pure.chageumtong.ui.theme
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -13,6 +14,13 @@ fun fig(px: Number): Dp = (px.toFloat() * FIG_SCALE).dp
 
 /** Figma 글자 크기 px → sp */
 fun figSp(px: Number): TextUnit = (px.toFloat() * FIG_SCALE).sp
+
+/**
+ * 좁은 폭(분할 화면: 옆에 다른 앱을 같이 띄움, Figma 107:2 의 840 폭)이면 true.
+ * 넓은 기본 배치(1682)와 좁은 배치(840) 사이 기준 = 1300 (Figma px).
+ */
+val LocalCompact = staticCompositionLocalOf { false }
+val COMPACT_MAX_WIDTH = fig(1300)
 
 /** 차량 가독성 최소값 (PRD §7) */
 val MIN_TOUCH = 76.dp

@@ -24,7 +24,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.BoxWithConstraints
+import com.pure.chageumtong.ui.theme.COMPACT_MAX_WIDTH
+import com.pure.chageumtong.ui.theme.LocalCompact
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,7 +67,9 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
 
-    Box(modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+      val compact = maxWidth < COMPACT_MAX_WIDTH
+      CompositionLocalProvider(LocalCompact provides compact) {
         Column(Modifier.fillMaxSize()) {
             NavHost(nav, startDestination = "home", modifier = Modifier.weight(1f)) {
                 composable("home") {
@@ -93,9 +100,11 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
                 }
             }
             // 좌하단 플로팅 탭바 (Figma 95:2211): 342×85, 아이콘 40, 선택 = 진한 색. 마이 탭 추가로 폭 342 → 446 (Figma 없음)
+            // 좁은 폭(107:2)에선 아래 가운데
             if (route in TABS.map { it.first }) {
                 Row(
-                    Modifier.padding(start = D.ScreenPad, top = D.BottomGap, bottom = fig(26))
+                    Modifier.align(if (compact) Alignment.CenterHorizontally else Alignment.Start)
+                        .padding(start = if (compact) 0.dp else D.ScreenPad, top = D.BottomGap, bottom = fig(26))
                         .size(fig(446), D.BottomBarHeight)
                         .clip(RoundedCornerShape(D.RadiusCard)).background(Surface)
                         .padding(horizontal = fig(30)),
@@ -120,5 +129,6 @@ fun AppRoot(container: AppContainer, modifier: Modifier = Modifier) {
             }
         }
         DriveAlertHost(vm, onClaimed = { id -> nav.navigate("analysis/$id") }, Modifier.align(Alignment.BottomCenter).padding(start = POPUP_EDGE, end = POPUP_EDGE, bottom = POPUP_EDGE))
+      }
     }
 }

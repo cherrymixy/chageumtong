@@ -1,5 +1,6 @@
 package com.pure.chageumtong.ui.screens.map
 
+import com.pure.chageumtong.ui.theme.LocalCompact
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -130,11 +131,10 @@ fun MapScreen(vm: AppViewModel) {
             (query.isBlank() || p.name.contains(query.trim()) || p.subtitle.contains(query.trim()))
     }
 
-    Row(
-        Modifier.fillMaxSize().padding(start = D.ScreenPad, top = D.ScreenPad, end = D.ScreenPad)
-            .clip(RoundedCornerShape(D.RadiusCard)),
-    ) {
-        Column(Modifier.width(fig(557)).fillMaxHeight().background(Color.White)) {
+    val compact = LocalCompact.current
+    val outer = Modifier.fillMaxSize().padding(start = D.ScreenPad, top = D.ScreenPad, end = D.ScreenPad).clip(RoundedCornerShape(D.RadiusCard))
+    val listPanel: @Composable (Modifier) -> Unit = { m ->
+        Column(m.background(Color.White)) {
             SearchBar(query, enabled = !driving) { query = it } // 주행 중 검색 입력 비활성 (PRD §7)
             LazyColumn(
                 Modifier.weight(1f),
@@ -154,8 +154,22 @@ fun MapScreen(vm: AppViewModel) {
                 }
             }
         }
-        PlaceMap(list, filters, vm.mapCenter, navigate, Modifier.weight(1f).fillMaxHeight()) { c ->
+    }
+    val map: @Composable (Modifier) -> Unit = { m ->
+        PlaceMap(list, filters, vm.mapCenter, navigate, m) { c ->
             filters = if (c in filters) filters - c else filters + c
+        }
+    }
+    // 좁은 폭: 지도 위, 검색·목록 아래 (Figma 없음, 107:2 규칙을 따라 세로로 쌓음)
+    if (compact) {
+        Column(outer) {
+            map(Modifier.fillMaxWidth().height(fig(520)))
+            listPanel(Modifier.fillMaxWidth().weight(1f))
+        }
+    } else {
+        Row(outer) {
+            listPanel(Modifier.width(fig(557)).fillMaxHeight())
+            map(Modifier.weight(1f).fillMaxHeight())
         }
     }
 }

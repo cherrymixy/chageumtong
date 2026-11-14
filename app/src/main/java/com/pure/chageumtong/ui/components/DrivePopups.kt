@@ -1,5 +1,7 @@
 package com.pure.chageumtong.ui.components
 
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -92,9 +94,20 @@ private fun PopupButton(text: String, bg: Color, fg: Color, onClick: () -> Unit)
     contentAlignment = Alignment.Center,
 ) { Text(text, style = T.PopupButton, color = fg, maxLines = 1) }
 
-/** 주행 중 위젯 (Figma 105:2337, 392×88 → ×2). 다른 앱 위 오버레이에서 쓴다 */
+/** 달리는 유니콘 GIF 6장 (홈 주행 카드·주행 위젯 공용) */
+internal val UNICORN_FRAMES = listOf(
+    R.drawable.unicorn_run, R.drawable.unicorn_run_1, R.drawable.unicorn_run_2,
+    R.drawable.unicorn_run_3, R.drawable.unicorn_run_4, R.drawable.unicorn_run_5,
+)
+internal const val UNICORN_FRAME_MS = 140L
+
+/** 주행 중 위젯 (Figma 105:2337, 392×88 → ×2). 다른 앱 위 오버레이에서 쓴다. moving이면 유니콘이 달림 */
 @Composable
-fun DriveWidget(points: Int, modifier: Modifier = Modifier) {
+fun DriveWidget(points: Int, modifier: Modifier = Modifier, moving: Boolean = false) {
+    val frame by produceState(0, moving) {
+        if (!moving) { value = 0; return@produceState }
+        while (true) { delay(UNICORN_FRAME_MS); value = (value + 1) % UNICORN_FRAMES.size }
+    }
     Box(modifier.size(f2(392), f2(88)).clip(RoundedCornerShape(f2(16))).background(Color.White)) {
         Box(Modifier.align(Alignment.TopCenter).offset(y = f2(7)).size(f2(50), f2(3)).clip(RoundedCornerShape(f2(5))).background(Handle))
         Text("이번 주행 포인트", Modifier.offset(f2(20), f2(22)), style = T.WidgetLabel, color = PopupTitle)
@@ -104,7 +117,7 @@ fun DriveWidget(points: Int, modifier: Modifier = Modifier) {
                 Text("P", style = T.WidgetNumber, color = Color.White.copy(alpha = 0.5f))
             }
             Image(
-                painterResource(R.drawable.unicorn_run), null,
+                painterResource(UNICORN_FRAMES[frame]), null,
                 Modifier.offset(f2(166), f2(4.93)).size(f2(68), f2(48.38)),
             )
         }

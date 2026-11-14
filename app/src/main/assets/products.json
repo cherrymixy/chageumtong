@@ -1,10 +1,10 @@
 [
-  { "id": "shop-wireless-mount", "tab": "SHOP", "name": "무선충전 송풍구 거치대", "priceLabel": "39,000원", "price": 39000, "imageAsset": "prod_wireless_mount" },
-  { "id": "shop-seat-cushion", "tab": "SHOP", "name": "메모리폼 시트 쿠션", "priceLabel": "29,000원", "price": 29000, "imageAsset": "prod_seat_cushion" },
+  { "id": "shop-wireless-pad", "tab": "SHOP", "name": "무선 충전 실리콘 패드 세트", "priceLabel": "43,700원", "price": 43700, "imageAsset": "prod_wireless_pad" },
+  { "id": "shop-visor-clip", "tab": "SHOP", "name": "선바이저 All in one 클립", "priceLabel": "26,000원", "price": 26000, "imageAsset": "prod_visor_clip" },
   { "id": "shop-trunk-organizer", "tab": "SHOP", "name": "트렁크 정리함", "priceLabel": "24,900원", "price": 24900, "imageAsset": "prod_trunk_organizer" },
-  { "id": "shop-floor-mat", "tab": "SHOP", "name": "프리미엄 카매트", "priceLabel": "89,000원", "price": 89000, "imageAsset": "prod_floor_mat" },
-  { "id": "shop-air-freshener", "tab": "SHOP", "name": "차량용 디퓨저", "priceLabel": "12,900원", "price": 12900, "imageAsset": "prod_air_freshener" },
-  { "id": "shop-dashcam-sd", "tab": "SHOP", "name": "블랙박스 전용 SD카드 128GB", "priceLabel": "19,900원", "price": 19900, "imageAsset": "prod_dashcam_sd" },
+  { "id": "shop-air-pump", "tab": "SHOP", "name": "차량용 공기압 주입기", "priceLabel": "49,000원", "price": 49000, "imageAsset": "prod_air_pump" },
+  { "id": "shop-handy-vacuum", "tab": "SHOP", "name": "차량용 핸디형 무선 청소기", "priceLabel": "95,000원", "price": 95000, "imageAsset": "prod_handy_vacuum" },
+  { "id": "shop-display-tray", "tab": "SHOP", "name": "디스플레이 후면 트레이, 디 올 뉴 투싼", "priceLabel": "34,000원", "price": 34000, "imageAsset": "prod_display_tray" },
 
   { "id": "bl-vgs", "tab": "BLUE_LINK", "name": "가상 기어 변속 VGS", "priceLabel": "2,400원/월", "price": 2400, "imageAsset": "prod_vgs" },
   { "id": "bl-lighting", "tab": "BLUE_LINK", "name": "라이팅 패턴 (아이오닉 9)", "priceLabel": "4,800원/월", "price": 4800, "imageAsset": "prod_lighting" },

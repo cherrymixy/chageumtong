@@ -1,5 +1,19 @@
 package com.pure.chageumtong.ui.screens.my
 
+import com.pure.chageumtong.ui.components.FigMessagePopup
+import com.pure.chageumtong.ui.components.FigPopupButton
+import com.pure.chageumtong.ui.components.FigPopupPrimary
+import com.pure.chageumtong.ui.components.FigPopupSecondary
+import com.pure.chageumtong.ui.components.RulesPopup
+import com.pure.chageumtong.ui.screens.shop.ProductCard
+import com.pure.chageumtong.data.repo.AppData
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.PaddingValues
+import com.pure.chageumtong.ui.theme.LocalCompact
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -84,8 +98,22 @@ fun MyScreen(vm: AppViewModel, onHistory: () -> Unit) {
             PointsCard(data.totalPoints)
         }
         Spacer(Modifier.height(fig(28)))
-        Row(horizontalArrangement = Arrangement.spacedBy(D.ColumnGap)) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(D.CardGap)) {
+        val compact = LocalCompact.current
+        // 좁은 폭: 프로필·통계 아래에 메뉴를 이어 붙인 한 줄 + 세로 스크롤 (Figma 없음, 107:2 규칙)
+        val body: @Composable (@Composable () -> Unit, @Composable () -> Unit) -> Unit = { left, right ->
+            if (compact) {
+                Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = fig(24)), verticalArrangement = Arrangement.spacedBy(D.CardGap)) {
+                    left(); right()
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(D.ColumnGap)) {
+                    Box(Modifier.weight(1f)) { left() }
+                    Box(Modifier.width(D.RightColumn)) { right() }
+                }
+            }
+        }
+        body({
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(D.CardGap)) {
                 Row(
                     Modifier.fillMaxWidth().card().padding(D.CardPad),
                     verticalAlignment = Alignment.CenterVertically,
@@ -102,8 +130,10 @@ fun MyScreen(vm: AppViewModel, onHistory: () -> Unit) {
                     Stat("안전운전 거리", cardKm(safe), "km", Modifier.weight(1f))
                     Stat("평균 안전점수", "$score", "점", Modifier.weight(1f), Primary)
                 }
+                UsedPoints(vm, data, onHistory)
             }
-            Column(Modifier.width(D.RightColumn), verticalArrangement = Arrangement.spacedBy(fig(12))) {
+        }, {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(fig(12))) {
                 MenuRow("적립 내역", onClick = onHistory)
                 MenuRow("포인트 적립 규칙") { popup = Popup.RULES }
                 MenuRow("앱 정보") { popup = Popup.INFO }
@@ -125,33 +155,29 @@ fun MyScreen(vm: AppViewModel, onHistory: () -> Unit) {
                     color = Alert,
                 ) { popup = Popup.RESET }
             }
-        }
+        })
     }
 
     when (popup) {
-        Popup.RULES -> InfoDialog(
-            "포인트 적립 규칙",
-            "· 안전운전 1km = 1P\n" +
-                "· 과속·급커브 미감속·안전거리 미확보가 감지된 지점 앞뒤 250m는 적립되지 않아요\n" +
-                "· 0.3km 미만 주행은 적립되지 않아요\n" +
-                "· 정차(P) 후 [주행 분석하고 적립하기]를 눌러야 적립돼요\n" +
-                "· 상점에서 상품 가격만큼 포인트가 차감돼요",
-        ) { popup = null }
-        Popup.INFO -> InfoDialog(
+        Popup.RULES -> RulesPopup { popup = null }
+        Popup.INFO -> FigMessagePopup(
             "앱 정보",
-            "차금통 ${BuildConfig.VERSION_NAME} · 팀 삼남매\n" +
+            "차금통 ${BuildConfig.VERSION_NAME}",
+            "팀 삼남매\n" +
                 "지도·장소 정보 ⓒ Kakao\n" +
                 "장소 사진: 이미지 검색 결과 (저작권은 원 게시자에게 있음)\n" +
-                "글꼴 Pretendard (SIL OFL 1.1)\n" +
-                "이미지 로딩 Coil (Apache 2.0)",
-        ) { popup = null }
-        Popup.RESET -> AlertDialog(
-            onDismissRequest = { popup = null },
-            title = { Text("데이터 초기화", style = T.Section) },
-            text = { Text("주행·포인트 기록을 처음 상태(시드 데이터)로 되돌릴까요?", style = T.DialogBody) },
-            confirmButton = { TextButton({ vm.resetAll(); popup = null }, Modifier.heightIn(min = MIN_TOUCH)) { Text("초기화", style = T.Button) } },
-            dismissButton = { TextButton({ popup = null }, Modifier.heightIn(min = MIN_TOUCH)) { Text("취소", style = T.Button) } },
-        )
+                "글꼴 Pretendard (SIL OFL 1.1) · 이미지 로딩 Coil (Apache 2.0)",
+            onClose = { popup = null },
+        ) { FigPopupPrimary("확인") { popup = null } }
+        Popup.RESET -> FigMessagePopup(
+            "데이터 초기화",
+            "처음 상태로 되돌릴까요?",
+            "주행·포인트 기록을 처음 상태(시드 데이터)로 되돌려요.\n되돌린 뒤에는 지금 기록을 다시 볼 수 없어요.",
+            onClose = { popup = null },
+        ) {
+            FigPopupSecondary("취소") { popup = null }
+            FigPopupButton("초기화", Alert, Color.White) { vm.resetAll(); popup = null }
+        }
         null -> Unit
     }
 }
@@ -184,13 +210,31 @@ private fun MenuRow(title: String, enabled: Boolean = true, color: Color = TextT
     }
 }
 
+/** 내가 사용한 포인트 내역: 산 상품(보유중)을 최근 구매 순으로 가로 목록. 제목 줄을 누르면 적립 내역 */
 @Composable
-private fun InfoDialog(title: String, body: String, onClose: () -> Unit) = AlertDialog(
-    onDismissRequest = onClose,
-    title = { Text(title, style = T.Section) },
-    text = { Text(body, style = T.DialogBody) },
-    confirmButton = { TextButton(onClose, Modifier.heightIn(min = MIN_TOUCH)) { Text("확인", style = T.Button) } },
-)
+private fun UsedPoints(vm: AppViewModel, data: AppData, onHistory: () -> Unit) {
+    val owned = data.txs.filter { it.productId != null }.sortedByDescending { it.at }
+        .mapNotNull { tx -> vm.products.find { it.id == tx.productId } }.distinct()
+    Column(Modifier.fillMaxWidth().card().padding(vertical = fig(32))) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = MIN_TOUCH).clickable(onClick = onHistory).padding(horizontal = fig(32)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("내가 사용한 포인트 내역", Modifier.weight(1f), style = T.RowTitle, color = TextTitle)
+            Image(painterResource(R.drawable.ic_caret_left), null, Modifier.size(fig(40)).rotate(180f))
+        }
+        Spacer(Modifier.height(fig(16)))
+        if (owned.isEmpty()) {
+            Text("아직 포인트로 산 상품이 없어요", Modifier.padding(horizontal = fig(32)), style = T.DialogBody, color = TextTertiary)
+        } else {
+            LazyRow(contentPadding = PaddingValues(horizontal = fig(22)), horizontalArrangement = Arrangement.spacedBy(fig(14))) {
+                items(owned, key = { it.id }) { p ->
+                    ProductCard(p, owned = true, enabled = false, Modifier.size(fig(317), fig(220)), stackPrice = true) {}
+                }
+            }
+        }
+    }
+}
 
 /** shortcut: 마이 탭 아이콘 PNG가 없어 임시로 그린 사람 모양. 승아가 ic_tab_my.png를 주면 Image로 교체 */
 @Composable

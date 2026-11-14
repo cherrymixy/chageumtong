@@ -1,5 +1,6 @@
 package com.pure.chageumtong.core
 
+import com.pure.chageumtong.domain.DriveSessionEngine
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -69,8 +70,11 @@ class DriveWidgetOverlay(private val context: Context, private val container: Ap
             setViewTreeSavedStateRegistryOwner(o)
             setContent {
                 val live by container.engine.live.collectAsState()
+                val input by container.lastInput.collectAsState()
                 DriveWidget(
                     live.livePoints,
+                    moving = (input?.sample?.speedMps ?: 0.0) > DriveSessionEngine.STOP_MPS,
+                    modifier =
                     Modifier
                         .pointerInput(Unit) {
                             detectDragGestures { change, drag ->

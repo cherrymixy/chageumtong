@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figma 포인트 적립 규칙 팝업 (112:992~1227) SVG 그대로 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="32dp"
+    android:viewportWidth="28"
+    android:viewportHeight="32">
+    <path
+        android:pathData="M3.00006 29.0001L25.0001 3.00006"
+        android:strokeWidth="6"
+        android:strokeColor="#F04D4D"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -1,5 +1,7 @@
 package com.pure.chageumtong.ui.screens.home
 
+import com.pure.chageumtong.ui.components.UNICORN_FRAMES
+import com.pure.chageumtong.ui.components.UNICORN_FRAME_MS
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -95,12 +97,16 @@ import com.pure.chageumtong.ui.theme.TextTitle
 import com.pure.chageumtong.ui.theme.TextUnit
 import com.pure.chageumtong.ui.theme.Track
 import com.pure.chageumtong.ui.theme.fig
+import com.pure.chageumtong.ui.theme.LocalCompact
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 
-/** 홈 (Figma 95:2142). 좌측 메인 카드가 남는/모자란 가로 폭을 흡수한다 (PRD §10). */
+/** 홈 (Figma 95:2142). 좌측 메인 카드가 남는/모자란 가로 폭을 흡수한다 (PRD §10). 좁은 폭은 세로 스크롤 (107:2). */
 @Composable
 fun HomeScreen(vm: AppViewModel, onClaimed: (String) -> Unit, onShop: () -> Unit, onHistory: () -> Unit) {
+    if (LocalCompact.current) return CompactHome(vm, onClaimed, onShop, onHistory)
     Row(
         Modifier.fillMaxSize().padding(start = D.ScreenPad, top = D.ScreenPad, end = D.ScreenPad),
         horizontalArrangement = Arrangement.spacedBy(D.ColumnGap),
@@ -115,6 +121,24 @@ fun HomeScreen(vm: AppViewModel, onClaimed: (String) -> Unit, onShop: () -> Unit
             }
             Spacer(Modifier.height(D.SmallCardGap))
             AdCarousel(vm, Modifier.fillMaxWidth().height(fig(279)))
+        }
+    }
+}
+
+/** 좁은 폭 홈 (Figma 107:2 / 111:19): 주행 카드 → 총 포인트 → 광고 → 안전·이동 카드, 간격 24 */
+@Composable
+private fun CompactHome(vm: AppViewModel, onClaimed: (String) -> Unit, onShop: () -> Unit, onHistory: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(start = fig(27), top = fig(30), end = fig(27)),
+        verticalArrangement = Arrangement.spacedBy(fig(24)),
+    ) {
+        DriveCard(vm, onClaimed, Modifier.fillMaxWidth().height(D.ContentHeight))
+        TotalCard(vm, onShop, onHistory)
+        AdCarousel(vm, Modifier.fillMaxWidth().height(fig(241)))
+        Row(horizontalArrangement = Arrangement.spacedBy(fig(20))) {
+            SafeCard(vm, Modifier.weight(1f))
+            DistanceCard(vm, Modifier.weight(1f))
         }
     }
 }
@@ -156,11 +180,6 @@ private fun LoopingBackground(speed: Float, modifier: Modifier) {
 private const val LOOP_MS = 10_000
 private const val OVERSPEED_SPEED = 3f // 과속 때 배경 3배 빠르게
 
-private val UNICORN_FRAMES = listOf(
-    R.drawable.unicorn_run, R.drawable.unicorn_run_1, R.drawable.unicorn_run_2,
-    R.drawable.unicorn_run_3, R.drawable.unicorn_run_4, R.drawable.unicorn_run_5,
-)
-private const val UNICORN_FRAME_MS = 140L
 
 /** 좌측 메인 카드: 이번 주행 (95:2225) */
 @Composable
@@ -185,12 +204,22 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
         0f, -1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "bounce",
     )
     val bouncePx = with(androidx.compose.ui.platform.LocalDensity.current) { fig(12).toPx() }
+    val compact = LocalCompact.current
 
     Column(modifier.card(SurfaceWarm)) {
-        Box(Modifier.fillMaxWidth().height(fig(739))) {
+        // 좁은 폭(111:67): 그림 높이 588, 유니콘 (78, 276)
+        Box(Modifier.fillMaxWidth().height(fig(if (compact) 588 else 739))) {
             LoopingBackground(
                 when { !motion.moving -> 0f; motion.overspeed -> OVERSPEED_SPEED; else -> 1f },
                 Modifier.fillMaxSize(),
+            )
+            // 길 위 당근 (Figma 111:406·415·424, 61.6×62.9, 간격 141.5): 포인트가 오를 때마다 맨 앞 당근을 먹음
+            RoadCarrots(
+                live.livePoints,
+                firstX = if (compact) 470f else 536f,
+                y = if (compact) 494f else 645f, // 당근 가운데 = 도로 중앙 차선
+                mouthX = if (compact) 400f else 466f,
+                mouthY = if (compact) 316f else 462f, // 유니콘 머리 높이 (그림 위쪽에서 40)
             )
             // GIF 6장(장당 140ms)을 넘겨 달리기. 멈추면 첫 장에 서 있음, 과속이면 다리도 빠르게
             val frameMs = if (motion.overspeed) UNICORN_FRAME_MS / 2 else UNICORN_FRAME_MS
@@ -201,7 +230,7 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
             Image(
                 painterResource(UNICORN_FRAMES[frame]), "달리는 유니콘",
                 // 새 그림 비율 458:375 → 높이 294 유지, 예전 그림과 가운데·바닥 맞춤
-                Modifier.offset(fig(144), fig(422)).size(fig(359), fig(294))
+                Modifier.offset(fig(if (compact) 78 else 144), fig(if (compact) 276 else 422)).size(fig(359), fig(294))
                     .graphicsLayer {
                         translationY = if (motion.moving) bounce * bouncePx else 0f
                         rotationZ = tilt.value
@@ -224,10 +253,23 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
                 )
             }
         }
-        Spacer(Modifier.height(fig(32)))
+        Spacer(Modifier.height(fig(if (compact) 44 else 32)))
         ProgressRail(live.distanceKm, live.visibleViolations, Modifier.padding(horizontal = fig(36)).fillMaxWidth())
         Spacer(Modifier.height(fig(32)))
         HorizontalDivider(Modifier.padding(horizontal = fig(36)), thickness = fig(1.5), color = Track)
+        if (compact) {
+            // 111:48: 주행거리·주행시간·안전점수 가운데 정렬 3칸 → 111:64: 꽉 찬 적립 버튼 726×92
+            Spacer(Modifier.weight(1f))
+            Row(Modifier.fillMaxWidth().padding(horizontal = fig(36)), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Stat("주행거리", fmtKm(live.distanceKm), "km", center = true)
+                Stat("주행시간", "${live.durationSec / 60}", "분", center = true)
+                Stat("안전점수", "${live.safeRatio}", "점", center = true)
+            }
+            Spacer(Modifier.weight(1f))
+            ClaimButton(vm, onClaimed, live.state, live.canClaim, driving, Modifier.padding(horizontal = fig(30)).fillMaxWidth().height(fig(92)))
+            Spacer(Modifier.height(fig(30)))
+            return@Column
+        }
         Spacer(Modifier.height(fig(25)))
         // 오른쪽 여백을 왼쪽(버튼 앞 30)과 같게: 마지막 칸이 카드 끝에 붙지 않도록 칸을 양끝 정렬
         Row(Modifier.padding(horizontal = fig(30)), verticalAlignment = Alignment.Top) {
@@ -242,9 +284,45 @@ private fun DriveCard(vm: AppViewModel, onClaimed: (String) -> Unit, modifier: M
     }
 }
 
+private const val CARROTS = 3
+private const val CARROT_GAP = 141.5f
+
+/**
+ * 길 위 당근 3개. points가 오르면 맨 앞 당근이 유니콘 입(mouthX)으로 빨려 들며 작아지고,
+ * 나머지는 한 칸씩 당겨지고 맨 뒤에 새 당근이 나타난다. 끝나면 처음 배치로 돌아가 다음 포인트를 기다림
+ */
 @Composable
-private fun ClaimButton(vm: AppViewModel, onClaimed: (String) -> Unit, state: DriveState, canClaim: Boolean, driving: Boolean) {
-    val m = Modifier.size(fig(364), fig(92))
+private fun RoadCarrots(points: Int, firstX: Float, y: Float, mouthX: Float, mouthY: Float) {
+    val eat = remember { Animatable(0f) }
+    var last by remember { mutableStateOf(points) }
+    LaunchedEffect(points) {
+        val gained = points > last
+        last = points
+        if (!gained) return@LaunchedEffect // 새 주행에서 0으로 돌아갈 땐 그대로
+        eat.snapTo(0f)
+        eat.animateTo(1f, tween(600))
+        eat.snapTo(0f)
+    }
+    val e = eat.value
+    repeat(CARROTS + 1) { i ->
+        // i = 0: 먹히는 당근, 1..: 한 칸씩 앞으로, 마지막(i = CARROTS)은 새로 나타남
+        val x = if (i == 0) firstX + (mouthX - firstX) * e else firstX + CARROT_GAP * (i - e)
+        val s = when (i) { 0 -> 1f - e; CARROTS -> e; else -> 1f }
+        val cy = if (i == 0) y + (mouthY - y) * e else y
+        if (s > 0f) {
+            Image(
+                painterResource(R.drawable.carrot_small), null,
+                Modifier.offset(fig(x), fig(cy)).size(fig(61.6), fig(62.9)).graphicsLayer { scaleX = s; scaleY = s; alpha = s },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ClaimButton(
+    vm: AppViewModel, onClaimed: (String) -> Unit, state: DriveState, canClaim: Boolean, driving: Boolean,
+    m: Modifier = Modifier.size(fig(364), fig(92)),
+) {
     when {
         state == DriveState.ENDED && !canClaim -> FigButton("0.3km 미만 · 닫기", vm::dismissDrive, m, style = T.ButtonLarge)
         driving -> FigButton("정차 후 적립할 수 있어요", {}, m, enabled = false, style = T.ButtonLarge)
@@ -253,8 +331,8 @@ private fun ClaimButton(vm: AppViewModel, onClaimed: (String) -> Unit, state: Dr
 }
 
 @Composable
-private fun Stat(label: String, value: String, unit: String, modifier: Modifier = Modifier) {
-    Column(modifier) {
+private fun Stat(label: String, value: String, unit: String, modifier: Modifier = Modifier, center: Boolean = false) {
+    Column(modifier, horizontalAlignment = if (center) Alignment.CenterHorizontally else Alignment.Start) {
         Text(label, style = T.Label, color = TextStat, maxLines = 1, softWrap = false)
         Spacer(Modifier.height(fig(19)))
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(fig(4))) {
@@ -274,10 +352,12 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
     var confirmReset by remember { mutableStateOf(false) }
     LaunchedEffect(driving) { if (driving) confirmReset = false }
 
+    val compact = LocalCompact.current
     Box(Modifier.fillMaxWidth().height(fig(334)).card(Primary)) {
-        Image(painterResource(R.drawable.carrot_big), null, Modifier.offset(fig(259), fig(43)).size(fig(329), fig(336)))
+        // 좁은 폭(111:433)은 카드가 786으로 넓어져 당근·그라데이션·버튼 위치가 다름
+        Image(painterResource(R.drawable.carrot_big), null, Modifier.offset(fig(if (compact) 433 else 259), fig(43)).size(fig(329), fig(336)))
         Box(
-            Modifier.offset(fig(248), fig(221)).size(fig(308), fig(113))
+            Modifier.offset(fig(248), fig(if (compact) 178 else 221)).size(fig(if (compact) 531 else 308), fig(if (compact) 156 else 113))
                 .background(Brush.verticalGradient(listOf(PrimaryDeep.copy(alpha = 0f), PrimaryDeep))),
         )
         // 숨김 메뉴: 제목 길게 누르기 → 데이터 초기화 (PRD §8). 주행 중엔 막음 (PRD §7)
@@ -295,8 +375,13 @@ private fun TotalCard(vm: AppViewModel, onShop: () -> Unit, onHistory: () -> Uni
             Text("+${fmtP(month?.earned ?: 0)}P", style = T.MonthBold, color = OnPrimary.copy(alpha = 0.9f))
             Text("적립", style = T.Month, color = OnPrimary.copy(alpha = 0.7f))
         }
-        FigButton("포인트 사용", onShop, Modifier.offset(fig(24), fig(221)).size(fig(351), fig(89)), container = Surface, content = TextNumber)
-        FigButton("적립 내역 확인", onHistory, Modifier.offset(fig(389), fig(221)).size(fig(199), fig(89)), container = PrimaryDark, content = Color.White)
+        if (compact) {
+            FigButton("포인트 사용하기", onShop, Modifier.offset(fig(24), fig(240)).size(fig(356), fig(70)), container = Surface, content = TextNumber)
+            FigButton("적립 내역 확인하기", onHistory, Modifier.offset(fig(406), fig(240)).size(fig(356), fig(70)), container = PrimaryDark, content = Color.White)
+        } else {
+            FigButton("포인트 사용", onShop, Modifier.offset(fig(24), fig(221)).size(fig(351), fig(89)), container = Surface, content = TextNumber)
+            FigButton("적립 내역 확인", onHistory, Modifier.offset(fig(389), fig(221)).size(fig(199), fig(89)), container = PrimaryDark, content = Color.White)
+        }
     }
     if (confirmReset) {
         AlertDialog(
